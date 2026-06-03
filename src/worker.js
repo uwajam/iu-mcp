@@ -3,6 +3,8 @@ const SERVER_INFO = {
   version: "0.1.0"
 };
 
+const SUPPORTED_PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
+
 const TOOLS = [
   {
     name: "search_courses",
@@ -57,8 +59,23 @@ export default {
         return jsonResponse(await getCourseByYearAndSyllabusId(env.DB, Number(academicYear), syllabusId));
       }
 
-      if (url.pathname === "/mcp" && request.method === "POST") {
-        return jsonResponse(await handleMcp(await request.json(), env.DB));
+      if (url.pathname === "/mcp") {
+        if (request.method === "GET" || request.method === "DELETE") {
+          return methodNotAllowedResponse();
+        }
+        if (request.method !== "POST") {
+          return methodNotAllowedResponse();
+        }
+
+        let message;
+        try {
+          message = await request.json();
+        } catch {
+          return jsonResponse(rpcError(null, -32700, "Parse error"), 400);
+        }
+
+        const response = await handleMcp(message, env.DB);
+        return response instanceof Response ? response : jsonResponse(response);
       }
 
       return jsonResponse({ error: "not found" }, 404);
@@ -69,20 +86,37 @@ export default {
 };
 
 async function handleMcp(message, db) {
+  if (!message || typeof message !== "object") {
+    return rpcError(null, -32600, "Invalid Request");
+  }
+
+  if (!("method" in message)) {
+    return acceptedResponse();
+  }
+
   const id = message.id ?? null;
   const method = message.method;
   const params = message.params ?? {};
+  const isNotification = !("id" in message);
 
   if (method === "initialize") {
+    const requestedVersion = params.protocolVersion;
+    const protocolVersion = SUPPORTED_PROTOCOL_VERSIONS.includes(requestedVersion)
+      ? requestedVersion
+      : SUPPORTED_PROTOCOL_VERSIONS[0];
     return rpcResult(id, {
-      protocolVersion: params.protocolVersion ?? "2024-11-05",
-      capabilities: { tools: {} },
+      protocolVersion,
+      capabilities: { tools: { listChanged: false } },
       serverInfo: SERVER_INFO
     });
   }
 
   if (method === "notifications/initialized") {
-    return { ok: true };
+    return acceptedResponse();
+  }
+
+  if (isNotification) {
+    return acceptedResponse();
   }
 
   if (method === "tools/list") {
@@ -254,7 +288,7 @@ function jsonResponse(body, status = 200) {
       "content-type": "application/json; charset=utf-8",
       "access-control-allow-origin": "*",
       "access-control-allow-methods": "GET,POST,OPTIONS",
-      "access-control-allow-headers": "content-type"
+      "access-control-allow-headers": "accept, content-type, mcp-protocol-version, mcp-session-id"
     }
   });
 }
@@ -265,7 +299,23 @@ function emptyResponse(status) {
     headers: {
       "access-control-allow-origin": "*",
       "access-control-allow-methods": "GET,POST,OPTIONS",
-      "access-control-allow-headers": "content-type"
+      "access-control-allow-headers": "accept, content-type, mcp-protocol-version, mcp-session-id"
+    }
+  });
+}
+
+function acceptedResponse() {
+  return emptyResponse(202);
+}
+
+function methodNotAllowedResponse() {
+  return new Response(null, {
+    status: 405,
+    headers: {
+      allow: "POST, OPTIONS",
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET,POST,OPTIONS",
+      "access-control-allow-headers": "accept, content-type, mcp-protocol-version, mcp-session-id"
     }
   });
 }

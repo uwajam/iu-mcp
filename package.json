@@ -5,13 +5,19 @@
   "type": "module",
   "scripts": {
     "check": "node --check src/worker.js",
+    "cf:login": "wrangler login",
+    "cf:whoami": "wrangler whoami",
+    "d1:create": "wrangler d1 create ibaraki_syllabus",
+    "d1:migrate": "wrangler d1 execute ibaraki_syllabus --remote --file migrations/0001_schema.sql",
     "deploy": "wrangler deploy",
-    "d1:migrate": "wrangler d1 execute ibaraki_syllabus --file migrations/0001_schema.sql",
     "export:d1": "python scripts/export-d1-seed.py",
     "dev": "wrangler dev"
   },
   "engines": {
     "node": ">=18"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "latest"
+  }
 }

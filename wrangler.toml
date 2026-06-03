@@ -5,7 +5,7 @@ compatibility_date = "2026-06-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "ibaraki_syllabus"
-database_id = "replace-with-your-d1-database-id"
+database_id = "8d6fded7-7209-435c-83dc-befb5309544b"
 
 [observability]
 enabled = true

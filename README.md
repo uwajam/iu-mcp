@@ -19,7 +19,8 @@
 
 ```sh
 npm install
-wrangler d1 create ibaraki_syllabus
+npm run cf:login
+npm run d1:create
 ```
 
 作成された `database_id` を `wrangler.toml` に設定してから、schemaを適用します。
@@ -32,7 +33,15 @@ npm run d1:migrate
 
 ```sh
 python scripts/export-d1-seed.py --db path/to/ibaraki_syllabus.sqlite --out work/d1_seed.sql
-wrangler d1 execute ibaraki_syllabus --file work/d1_seed.sql
+npx wrangler d1 execute ibaraki_syllabus --remote --file work/d1_seed.sql
+```
+
+件数が多い場合は分割して投入します。
+
+```sh
+python scripts/export-d1-seed.py --db work/ibaraki_syllabus.sqlite --chunk-size 500
+npx wrangler d1 execute ibaraki_syllabus --remote --file work/d1_seed/0001.sql
+npx wrangler d1 execute ibaraki_syllabus --remote --file work/d1_seed/0002.sql
 ```
 
 deploy:
