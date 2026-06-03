@@ -1,0 +1,11 @@
+name = "ibaraki-syllabus"
+main = "src/worker.js"
+compatibility_date = "2026-06-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ibaraki_syllabus"
+database_id = "replace-with-your-d1-database-id"
+
+[observability]
+enabled = true

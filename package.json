@@ -1,0 +1,17 @@
+{
+  "name": "ibaraki-syllabus-worker",
+  "version": "0.1.0",
+  "description": "Cloudflare Workers/D1 API and MCP endpoint for Ibaraki University syllabus data.",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/worker.js",
+    "deploy": "wrangler deploy",
+    "d1:migrate": "wrangler d1 execute ibaraki_syllabus --file migrations/0001_schema.sql",
+    "export:d1": "python scripts/export-d1-seed.py",
+    "dev": "wrangler dev"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

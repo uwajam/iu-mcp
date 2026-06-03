@@ -1,0 +1,80 @@
+# ibaraki-syllabus-worker
+
+茨城大学シラバスを Cloudflare Workers + D1 で公開するためのAPI/MCP endpointです。
+
+公開Workerは大学サイトへリアルタイム検索を行いません。D1に投入済みの静的データだけを読み、raw HTMLもレスポンスには含めません。
+
+## 構成
+
+- `src/worker.js`
+  - HTTP API と HTTP MCP endpoint。
+- `migrations/0001_schema.sql`
+  - D1 schema。
+- `scripts/export-d1-seed.py`
+  - 既存のSQLiteスナップショットからD1投入用SQLを生成する移行補助。
+- `wrangler.toml`
+  - Worker名とD1 binding設定。
+
+## Setup
+
+```sh
+npm install
+wrangler d1 create ibaraki_syllabus
+```
+
+作成された `database_id` を `wrangler.toml` に設定してから、schemaを適用します。
+
+```sh
+npm run d1:migrate
+```
+
+既存のSQLiteスナップショットをD1へ投入する場合:
+
+```sh
+python scripts/export-d1-seed.py --db path/to/ibaraki_syllabus.sqlite --out work/d1_seed.sql
+wrangler d1 execute ibaraki_syllabus --file work/d1_seed.sql
+```
+
+deploy:
+
+```sh
+npm run deploy
+```
+
+## API
+
+```text
+GET /health
+GET /courses?academicYear=2026&query=入門&limit=20
+GET /courses?academicYear=2026&courseNumberPrefix=T3
+GET /courses/2026/04_T3003
+POST /mcp
+```
+
+`GET /courses/{year}/{syllabusId}` は `20xx` と `^[0-9A-Z]+_[A-Z0-9-]+$` のみ受け付けます。
+
+## MCP
+
+`POST /mcp` は軽量なJSON-RPC endpointです。
+
+対応メソッド:
+
+- `initialize`
+- `tools/list`
+- `tools/call`
+
+公開ツール:
+
+- `search_courses`
+- `get_course`
+
+`search_courses` はD1だけを検索します。`get_course` は `courseId`、`syllabusId`、`courseNumber`、または公式URLで詳細を取得できます。
+
+## Security
+
+- リアルタイム検索は公開APIに入れていません。
+- SQLはD1 prepared statementだけを使います。
+- `course_id` 系入力は大文字英数字、アンダースコア、ハイフン、URLの想定範囲だけに寄せています。
+- raw HTMLはD1に入れず、APIレスポンスにも返しません。
+
+`html_r2_key` は将来raw HTMLをR2へ退避するための予約フィールドです。現時点のWorkerはR2を読みません。
