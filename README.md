@@ -54,6 +54,8 @@ npm run deploy
 
 GitHub Actionsでシラバスをクロールし、SQLiteからD1 seedを作ってremote D1へ投入します。
 
+定期実行は毎月1日 18:12 UTC、つまり日本時間では毎月2日 03:12です。必要なときは手動実行できます。
+
 必要なRepository secrets:
 
 - `CLOUDFLARE_API_TOKEN`
