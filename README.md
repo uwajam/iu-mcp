@@ -50,6 +50,30 @@ deploy:
 npm run deploy
 ```
 
+## Update Data
+
+GitHub Actionsでシラバスをクロールし、SQLiteからD1 seedを作ってremote D1へ投入します。
+
+必要なRepository secrets:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+手動実行:
+
+```text
+Actions -> Update syllabus D1 -> Run workflow
+```
+
+ローカルで小さく試す場合:
+
+```sh
+python scripts/crawl-syllabus.py --year 2026 --max-pages 1 --limit 10 --db work/ibaraki_syllabus.sqlite
+python scripts/export-d1-seed.py --db work/ibaraki_syllabus.sqlite --chunk-size 500
+```
+
+公開Workerはクロールを行わず、D1だけを読みます。
+
 ## API
 
 ```text
