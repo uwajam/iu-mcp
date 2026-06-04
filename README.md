@@ -4,6 +4,8 @@
 
 公開Workerは大学サイトへリアルタイム検索を行いません。D1に投入済みの静的データだけを読み、raw HTMLもレスポンスには含めません。
 
+説明サイト: `https://iu.syllabus-mcp.uwaja.net/`
+
 ## 構成
 
 - `src/worker.js`
