@@ -5,7 +5,20 @@ const SERVER_INFO = {
 
 const SUPPORTED_PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 
-const ROBOTS_TXT = `User-agent: *
+const ROBOTS_TXT = `# As a condition of accessing this website, you agree to abide by the following content signals:
+#
+# (a) If a content-signal = yes, you may collect content for the corresponding use.
+# (b) If a content-signal = no, you may not collect content for the corresponding use.
+# (c) If the website operator does not include a content signal for a corresponding use, the website operator neither grants nor restricts permission via content signal with respect to the corresponding use.
+# The content signals and their meanings are:
+#
+# search: building a search index and providing search results, such as returning hyperlinks and short excerpts. Search does not include providing AI-generated search summaries.
+# ai-input: inputting content into one or more AI models, such as retrieval augmented generation, grounding, or other real-time taking of content for generative AI search answers.
+# ai-train: training or fine-tuning AI models.
+# ANY RESTRICTIONS EXPRESSED VIA CONTENT SIGNALS ARE EXPRESS RESERVATIONS OF RIGHTS UNDER ARTICLE 4 OF THE EUROPEAN UNION DIRECTIVE 2019/790 ON COPYRIGHT AND RELATED RIGHTS IN THE DIGITAL SINGLE MARKET.
+
+User-agent: *
+Content-Signal: search=yes, ai-train=no
 Allow: /
 Disallow: /mcp
 Disallow: /courses
