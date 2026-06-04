@@ -7,12 +7,24 @@ on:
         description: Academic year to crawl
         required: true
         default: "2026"
-      max_pages:
-        description: Maximum result pages to crawl. Use 0 for all pages.
+      start_page:
+        description: First search result page to crawl
+        required: true
+        default: "1"
+      end_page:
+        description: Last search result page to crawl
+        required: true
+        default: "1"
+      limit:
+        description: Maximum detail pages to fetch. Use 0 for no limit.
         required: true
         default: "0"
   schedule:
     - cron: "12 18 1 * *"
+
+concurrency:
+  group: update-syllabus-d1
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -22,7 +34,9 @@ jobs:
       contents: read
     env:
       YEAR: ${{ github.event.inputs.year || '2026' }}
-      MAX_PAGES: ${{ github.event.inputs.max_pages || '0' }}
+      START_PAGE: ${{ github.event.inputs.start_page || '1' }}
+      END_PAGE: ${{ github.event.inputs.end_page || '1' }}
+      LIMIT: ${{ github.event.inputs.limit || '0' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +55,9 @@ jobs:
         run: |
           python scripts/crawl-syllabus.py \
             --year "$YEAR" \
-            --max-pages "$MAX_PAGES" \
+            --start-page "$START_PAGE" \
+            --end-page "$END_PAGE" \
+            --limit "$LIMIT" \
             --delay 1.5 \
             --page-delay 2.0 \
             --db work/ibaraki_syllabus.sqlite
@@ -59,7 +75,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in work/d1_seed/*.sql; do
+          shopt -s nullglob
+          files=(work/d1_seed/*.sql)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No D1 seed chunks were generated."
+            exit 0
+          fi
+          for file in "${files[@]}"; do
             echo "Importing ${file}"
             npx wrangler d1 execute ibaraki_syllabus --remote --file "$file"
           done
@@ -71,7 +93,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ibaraki-syllabus-sqlite-${{ env.YEAR }}
+          name: ibaraki-syllabus-sqlite-${{ env.YEAR }}-p${{ env.START_PAGE }}-${{ env.END_PAGE }}
           path: work/ibaraki_syllabus.sqlite
           if-no-files-found: ignore
           retention-days: 7
