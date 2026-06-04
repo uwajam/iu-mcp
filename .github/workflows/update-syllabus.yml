@@ -20,7 +20,7 @@ on:
         required: true
         default: "0"
   schedule:
-    - cron: "12 18 1 * *"
+    - cron: "12 18 * * 0"
 
 concurrency:
   group: update-syllabus-d1
@@ -34,8 +34,6 @@ jobs:
       contents: read
     env:
       YEAR: ${{ github.event.inputs.year || '2026' }}
-      START_PAGE: ${{ github.event.inputs.start_page || '1' }}
-      END_PAGE: ${{ github.event.inputs.end_page || '1' }}
       LIMIT: ${{ github.event.inputs.limit || '0' }}
     steps:
       - uses: actions/checkout@v4
@@ -50,6 +48,34 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Resolve crawl range
+        id: range
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            start_page="${{ github.event.inputs.start_page }}"
+            end_page="${{ github.event.inputs.end_page }}"
+          else
+            # 72 pages / 8 pages per run = 9 weekly batches.
+            anchor="2026-06-07"
+            anchor_epoch="$(date -u -d "$anchor 00:00:00" +%s)"
+            now_epoch="$(date -u +%s)"
+            weeks_since_anchor="$(( (now_epoch - anchor_epoch) / 604800 ))"
+            batch="$(( weeks_since_anchor % 9 ))"
+            if [ "$batch" -lt 0 ]; then
+              batch="$(( batch + 9 ))"
+            fi
+            start_page="$(( batch * 8 + 1 ))"
+            end_page="$(( start_page + 7 ))"
+          fi
+
+          echo "START_PAGE=$start_page" >> "$GITHUB_ENV"
+          echo "END_PAGE=$end_page" >> "$GITHUB_ENV"
+          echo "start_page=$start_page" >> "$GITHUB_OUTPUT"
+          echo "end_page=$end_page" >> "$GITHUB_OUTPUT"
+          echo "Resolved crawl range: pages $start_page-$end_page"
 
       - name: Crawl syllabus into SQLite
         run: |
@@ -93,7 +119,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ibaraki-syllabus-sqlite-${{ env.YEAR }}-p${{ env.START_PAGE }}-${{ env.END_PAGE }}
+          name: ibaraki-syllabus-sqlite-${{ env.YEAR }}-p${{ steps.range.outputs.start_page }}-${{ steps.range.outputs.end_page }}
           path: work/ibaraki_syllabus.sqlite
           if-no-files-found: ignore
           retention-days: 7
