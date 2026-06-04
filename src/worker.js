@@ -5,6 +5,14 @@ const SERVER_INFO = {
 
 const SUPPORTED_PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 
+const ROBOTS_TXT = `User-agent: *
+Allow: /
+Disallow: /mcp
+Disallow: /courses
+Disallow: /health
+Disallow: /status
+`;
+
 const TOOLS = [
   {
     name: "search_courses",
@@ -652,6 +660,10 @@ export default {
         return htmlResponse(SITE_HTML);
       }
 
+      if (url.pathname === "/robots.txt" && request.method === "GET") {
+        return textResponse(ROBOTS_TXT, "text/plain; charset=utf-8");
+      }
+
       if (url.pathname === "/health" && request.method === "GET") {
         return jsonResponse({ ok: true, service: SERVER_INFO.name });
       }
@@ -906,6 +918,16 @@ function htmlResponse(html, status = 200) {
     headers: {
       "content-type": "text/html; charset=utf-8",
       "cache-control": "public, max-age=300"
+    }
+  });
+}
+
+function textResponse(text, contentType, status = 200) {
+  return new Response(text, {
+    status,
+    headers: {
+      "content-type": contentType,
+      "cache-control": "public, max-age=3600"
     }
   });
 }
