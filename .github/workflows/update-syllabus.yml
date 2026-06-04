@@ -86,6 +86,9 @@ jobs:
             --limit "$LIMIT" \
             --delay 1.5 \
             --page-delay 2.0 \
+            --detail-retries 3 \
+            --retry-delay 10 \
+            --max-detail-errors 50 \
             --db work/ibaraki_syllabus.sqlite
 
       - name: Export D1 seed chunks

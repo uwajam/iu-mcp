@@ -184,11 +184,16 @@ class Crawler:
             raise RuntimeError(f"Search failed: status={status} url={result_url}")
         return result_url, html
 
-    def fetch_detail(self, url):
-        status, final_url, html = self.follow_get(url)
-        if status != 200 or "SYSTEM ERROR" in html:
-            raise RuntimeError(f"Detail fetch failed: status={status} url={final_url}")
-        return final_url, html
+    def fetch_detail(self, url, retries=3, retry_delay=5.0):
+        last_error = None
+        for attempt in range(retries + 1):
+            status, final_url, html = self.follow_get(url)
+            if status == 200 and "SYSTEM ERROR" not in html:
+                return final_url, html
+            last_error = f"Detail fetch failed: status={status} url={final_url}"
+            if attempt < retries and retry_delay > 0:
+                time.sleep(retry_delay * (attempt + 1))
+        raise RuntimeError(last_error)
 
 
 def main():
@@ -202,6 +207,10 @@ def main():
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--delay", type=float, default=1.5)
     parser.add_argument("--page-delay", type=float, default=2.0)
+    parser.add_argument("--detail-retries", type=int, default=3)
+    parser.add_argument("--retry-delay", type=float, default=5.0)
+    parser.add_argument("--max-detail-errors", type=int, default=50)
+    parser.add_argument("--fail-on-detail-error", action="store_true")
     parser.add_argument("--refresh", action="store_true")
     parser.add_argument("--free-word", default="")
     parser.add_argument("--course-name", default="")
@@ -223,6 +232,7 @@ def main():
         total_discovered = 0
         fetched = 0
         skipped = 0
+        detail_errors = 0
         page = 1
         current_url = result_url
 
@@ -237,7 +247,26 @@ def main():
                     if not args.refresh and course_exists(conn, url):
                         skipped += 1
                         continue
-                    final_url, detail_html = crawler.fetch_detail(url)
+                    try:
+                        final_url, detail_html = crawler.fetch_detail(
+                            url,
+                            retries=args.detail_retries,
+                            retry_delay=args.retry_delay
+                        )
+                    except RuntimeError as error:
+                        detail_errors += 1
+                        print(json.dumps({
+                            "level": "warning",
+                            "event": "detail_fetch_failed",
+                            "page": page,
+                            "url": url,
+                            "error": str(error)
+                        }, ensure_ascii=False))
+                        if args.fail_on_detail_error:
+                            raise
+                        if args.max_detail_errors and detail_errors > args.max_detail_errors:
+                            raise RuntimeError(f"Too many detail fetch errors: {detail_errors}") from error
+                        continue
                     row = parse_course(final_url, args.year, detail_html)
                     upsert_course(conn, row)
                     fetched += 1
@@ -261,7 +290,14 @@ def main():
             if status != 200 or "SYSTEM ERROR" in html:
                 raise RuntimeError(f"Paging failed: status={status} url={current_url}")
 
-    print(json.dumps({"ok": True, "db": str(db_path), "discovered": total_discovered, "fetched": fetched, "skipped": skipped}, ensure_ascii=False, indent=2))
+    print(json.dumps({
+        "ok": True,
+        "db": str(db_path),
+        "discovered": total_discovered,
+        "fetched": fetched,
+        "skipped": skipped,
+        "detailErrors": detail_errors
+    }, ensure_ascii=False, indent=2))
 
 
 def ensure_schema(conn):
