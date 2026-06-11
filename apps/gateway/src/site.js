@@ -3,24 +3,24 @@ export const SITE_HTML = `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>茨城大学学務情報MCP</title>
-  <meta name="description" content="茨城大学の公開学務情報を、CodexやClaude CodeなどのAIツールから検索できる非公式MCPです。">
+  <title>茨城大学 学務情報MCPサーバ</title>
+  <meta name="description" content="茨城大学のシラバスや履修要項PDFなど、公開されている学務情報を検索できる非公式ページです。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&family=Shippori+Mincho:wght@700;800&display=swap" rel="stylesheet">
 <style>
     :root {
       color-scheme: light;
-      --ink: #161b19;
-      --subtle: #49524e;
-      --muted: #6b746f;
+      --ink: #111514;
+      --subtle: #3f4c49;
+      --muted: #6f7772;
       --line: #d8ddd7;
-      --paper: #f8f6ef;
-      --paper-2: #eeeee4;
-      --panel: #ffffff;
-      --green: #1b6b4d;
-      --blue: #244d73;
-      --rust: #a2472d;
+      --paper: #fbfaf2;
+      --paper-2: #f1f2e8;
+      --panel: #fffffb;
+      --green: #006b4a;
+      --blue: #1f4b72;
+      --rust: #9b3f25;
       --code: #111716;
       --code-line: rgba(232, 246, 237, .13);
     }
@@ -30,6 +30,7 @@ export const SITE_HTML = `<!doctype html>
       margin: 0;
       color: var(--ink);
       background: #fbfbf8;
+      background-size: 76px 100%, auto;
       font-family: "Noto Sans JP", Inter, "Yu Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.72;
       text-rendering: optimizeLegibility;
@@ -40,9 +41,8 @@ export const SITE_HTML = `<!doctype html>
       position: sticky;
       top: 0;
       z-index: 10;
-      border-bottom: 1px solid rgba(22, 27, 25, .1);
-      background: rgba(251, 251, 248, .88);
-      backdrop-filter: blur(16px);
+      background: rgba(251, 251, 248, .9);
+      backdrop-filter: blur(10px);
     }
     nav {
       display: flex;
@@ -54,29 +54,23 @@ export const SITE_HTML = `<!doctype html>
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+      color: var(--green);
+      font-family: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      font-size: 18px;
+      font-style: italic;
       font-weight: 800;
       text-decoration: none;
       white-space: nowrap;
     }
     .mark {
-      display: grid;
-      place-items: center;
-      width: 36px;
-      height: 36px;
-      border: 1px solid #cbd5cd;
-      background: #f2f4ed;
-      color: var(--green);
-      font-size: 14px;
-      font-weight: 900;
-      border-radius: 6px;
-      letter-spacing: 0;
+      display: none;
     }
     .links {
       display: flex;
       align-items: center;
       gap: 20px;
-      color: var(--muted);
+      color: #4e5f59;
       font-size: 14px;
     }
     .links a { text-decoration: none; }
@@ -84,11 +78,10 @@ export const SITE_HTML = `<!doctype html>
     .hero {
       position: relative;
       overflow: hidden;
-      padding: 74px 0 58px;
-      border-bottom: 1px solid var(--line);
+      padding: 80px 0 68px;
       background:
         linear-gradient(90deg, rgba(22, 27, 25, .045) 1px, transparent 1px),
-        linear-gradient(180deg, #fbfbf8 0%, var(--paper) 100%);
+        linear-gradient(180deg, #fbfbf8 0%, #f8f6ef 100%);
       background-size: 72px 100%, auto;
     }
     .hero:before {
@@ -104,56 +97,60 @@ export const SITE_HTML = `<!doctype html>
       position: relative;
       display: grid;
       grid-template-columns: 1fr;
-      gap: 30px;
+      gap: 42px;
       align-items: start;
     }
     .hero-copy {
       max-width: 1050px;
-      padding: 28px 0 34px;
-      border-top: 1px solid rgba(22, 27, 25, .18);
-      border-bottom: 1px solid rgba(22, 27, 25, .18);
+      padding: 8px 0 0;
     }
     .eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 10px;
       color: var(--green);
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
+      letter-spacing: 0;
+      font-style: italic;
+      margin-bottom: 14px;
     }
     .rule {
-      width: 38px;
-      height: 1px;
-      background: var(--green);
+      display: none;
     }
     h1 {
       margin: 0;
       max-width: none;
-      font-size: 70px;
+      font-size: 66px;
       line-height: 1.08;
       letter-spacing: 0;
       font-family: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
       font-weight: 800;
+      font-style: italic;
       word-break: keep-all;
       white-space: nowrap;
       font-feature-settings: "palt";
-      text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+      text-shadow: 1px 1px 0 rgba(0, 107, 74, .16);
     }
     .lead {
-      margin: 24px 0 0;
+      margin: 26px 0 0;
       max-width: 860px;
       color: var(--subtle);
       font-size: 18px;
+      font-style: italic;
+      line-height: 1.9;
       word-break: keep-all;
+    }
+    .lead span {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
     }
     .actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-top: 32px;
+      margin-top: 34px;
     }
     .button {
       display: inline-flex;
@@ -161,30 +158,30 @@ export const SITE_HTML = `<!doctype html>
       justify-content: center;
       min-height: 44px;
       padding: 0 18px;
-      border: 1px solid var(--ink);
       background: var(--ink);
       color: #fff;
       text-decoration: none;
       font-weight: 800;
-      border-radius: 6px;
+      border-radius: 3px;
     }
     .button.secondary {
-      background: rgba(255,255,255,.44);
+      background: rgba(255,255,255,.56);
       color: var(--ink);
-      border-color: #cbd2cc;
+      border: 1px solid rgba(17, 21, 20, .22);
     }
     .button:hover { transform: translateY(-1px); }
     .status-row {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 26px;
+      margin-top: 30px;
       max-width: 880px;
     }
     .status {
       min-height: 70px;
-      border-top: 1px solid rgba(22, 27, 25, .18);
+      background: rgba(255, 255, 251, .56);
       padding-top: 12px;
+      padding-left: 14px;
     }
     .status b {
       display: block;
@@ -199,10 +196,9 @@ export const SITE_HTML = `<!doctype html>
       line-height: 1.45;
     }
     .hero-panel {
-      border: 1px solid #cdd6ce;
       background: rgba(255, 255, 255, .82);
-      border-radius: 8px;
-      box-shadow: 0 18px 42px rgba(38, 45, 39, .1);
+      border-radius: 3px;
+      box-shadow: 0 18px 42px rgba(38, 45, 39, .08);
       overflow: hidden;
       max-width: 1040px;
     }
@@ -212,8 +208,7 @@ export const SITE_HTML = `<!doctype html>
       gap: 16px;
       align-items: center;
       padding: 18px 20px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(248, 246, 239, .88);
+      background: rgba(239, 242, 229, .9);
     }
     .panel-title {
       display: block;
@@ -227,10 +222,9 @@ export const SITE_HTML = `<!doctype html>
       margin-top: 2px;
     }
     .endpoint-badge {
-      border: 1px solid #cad3ce;
       color: var(--green);
       background: #f5f7f2;
-      border-radius: 999px;
+      border-radius: 3px;
       padding: 6px 10px;
       font-size: 12px;
       font-weight: 800;
@@ -245,10 +239,7 @@ export const SITE_HTML = `<!doctype html>
       grid-template-columns: 1fr;
       gap: 10px;
       padding: 18px 20px;
-      border-right: 1px solid var(--line);
-      border-bottom: 0;
     }
-    .panel-row:last-child { border-right: 0; }
     .panel-key {
       color: var(--blue);
       font: 800 13px/1.45 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -266,7 +257,6 @@ export const SITE_HTML = `<!doctype html>
       color: #dff3e6;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 18px 45px rgba(22, 37, 29, .12);
     }
     .console-head {
       display: flex;
@@ -298,33 +288,37 @@ export const SITE_HTML = `<!doctype html>
       font: 13px/1.62 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     }
     code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
-    section { padding: 76px 0; }
+    section { padding: 88px 0; }
+    section:nth-of-type(even) {
+      background: rgba(248, 249, 246, .76);
+    }
     .section-head {
-      display: grid;
-      grid-template-columns: minmax(240px, .42fr) minmax(0, .58fr);
-      gap: 34px;
-      align-items: end;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--line);
+      max-width: 760px;
+      margin-bottom: 44px;
     }
     h2 {
       margin: 0;
-      font-size: 40px;
-      line-height: 1.16;
+      font-size: 34px;
+      line-height: 1.22;
       letter-spacing: 0;
+      font-family: "Noto Sans JP", Inter, "Yu Gothic", system-ui, sans-serif;
+      font-style: normal;
+      font-weight: 900;
     }
     .section-note {
-      margin: 0;
+      margin: 14px 0 0;
+      max-width: 680px;
       color: var(--muted);
       font-size: 16px;
-      line-height: 1.75;
-      word-break: keep-all;
+      line-height: 1.8;
+      word-break: normal;
+      overflow-wrap: anywhere;
+      text-wrap: pretty;
     }
     .steps, .usecases {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
+      gap: 18px;
     }
     .coverage-grid {
       display: grid;
@@ -335,16 +329,14 @@ export const SITE_HTML = `<!doctype html>
       border: 1px solid var(--line);
       background: var(--panel);
       border-radius: 8px;
-      padding: 24px;
+      padding: 26px;
     }
     .coverage-top {
       display: flex;
       justify-content: space-between;
       gap: 16px;
       align-items: start;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
     .coverage-count {
       color: var(--muted);
@@ -359,8 +351,7 @@ export const SITE_HTML = `<!doctype html>
       min-height: 34px;
     }
     .year-chip {
-      border: 1px solid var(--line);
-      background: #fbfbf8;
+      background: #eef5f1;
       color: var(--ink);
       border-radius: 999px;
       padding: 6px 10px;
@@ -368,7 +359,6 @@ export const SITE_HTML = `<!doctype html>
       font-weight: 800;
     }
     .year-chip.latest {
-      border-color: rgba(27, 107, 77, .38);
       background: #f0f6f1;
       color: var(--green);
     }
@@ -381,14 +371,21 @@ export const SITE_HTML = `<!doctype html>
       border: 1px solid var(--line);
       background: var(--panel);
       border-radius: 8px;
-      padding: 22px;
+      padding: 24px;
     }
     .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 24px;
+      margin-bottom: 16px;
+      background: #eef5f1;
       color: var(--green);
       font-weight: 900;
       font-size: 12px;
       letter-spacing: .08em;
-      margin-bottom: 14px;
+      border-radius: 999px;
     }
     h3 {
       margin: 0 0 10px;
@@ -400,14 +397,13 @@ export const SITE_HTML = `<!doctype html>
       margin: 0;
       color: var(--muted);
     }
+    .item h3 + p { margin-top: 10px; }
     .tool {
-      border-top: 1px solid var(--line);
-      padding: 26px 0;
+      padding: 28px 0;
       display: grid;
       grid-template-columns: 240px minmax(0, 1fr);
       gap: 30px;
     }
-    .tool:first-of-type { border-top: 0; }
     .tool-name {
       color: var(--blue);
       font-weight: 850;
@@ -421,8 +417,7 @@ export const SITE_HTML = `<!doctype html>
       margin-top: 14px;
     }
     .params span {
-      border: 1px solid var(--line);
-      background: #fbfbf8;
+      background: #f3f6f3;
       color: var(--muted);
       padding: 5px 8px;
       border-radius: 999px;
@@ -441,7 +436,7 @@ export const SITE_HTML = `<!doctype html>
       border: 1px solid var(--line);
       background: var(--panel);
       border-radius: 8px;
-      padding: 18px;
+      padding: 20px;
     }
     .connect-step strong {
       display: block;
@@ -497,10 +492,10 @@ export const SITE_HTML = `<!doctype html>
     }
     .copy.light {
       border-color: var(--line);
-      background: var(--paper);
+      background: #f3f6f3;
       color: var(--ink);
     }
-    .copy.light:hover { background: var(--paper-2); }
+    .copy.light:hover { background: #eef5f1; }
     .faq-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -523,8 +518,7 @@ export const SITE_HTML = `<!doctype html>
       padding: 18px 20px;
     }
     .example-row + .example-row {
-      border-top: 1px solid var(--line);
-      background: #f7f8f3;
+      background: #f7f9f7;
     }
     .example-label {
       color: var(--green);
@@ -541,8 +535,7 @@ export const SITE_HTML = `<!doctype html>
       margin-top: 8px;
     }
     footer {
-      border-top: 1px solid var(--line);
-      padding: 28px 0 44px;
+      padding: 34px 0 48px;
       color: var(--muted);
       font-size: 14px;
       background: #f6f6f0;
@@ -554,25 +547,23 @@ export const SITE_HTML = `<!doctype html>
       flex-wrap: wrap;
     }
     @media (max-width: 920px) {
-      .hero-grid, .section-head, .tool, .connect-grid, .connect-steps { grid-template-columns: 1fr; }
+      .hero-grid, .tool, .connect-grid, .connect-steps { grid-template-columns: 1fr; }
       .steps, .usecases, .coverage-grid, .faq-grid { grid-template-columns: 1fr; }
       .endpoint { grid-template-columns: 1fr; }
       .hero { padding-top: 58px; }
-      h1 { font-size: 52px; white-space: normal; }
+      h1 { font-size: 46px; white-space: normal; }
       h2 { font-size: 32px; }
       .links { display: none; }
       .status-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .panel-list { grid-template-columns: 1fr; }
       .panel-row {
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 0;
       }
-      .panel-row:last-child { border-bottom: 0; }
     }
     @media (max-width: 560px) {
       .shell { width: min(100% - 28px, 1160px); }
-      h1 { font-size: 40px; }
-      .lead { font-size: 16px; }
+      h1 { font-size: 36px; }
+      .lead { font-size: 15px; }
       .status-row { grid-template-columns: 1fr; }
       .panel-top, .panel-row, .example-row { grid-template-columns: 1fr; }
       .brand span:last-child { white-space: normal; line-height: 1.25; }
@@ -582,7 +573,7 @@ export const SITE_HTML = `<!doctype html>
 <body>
   <header>
     <nav class="shell">
-      <a class="brand" href="/" aria-label="茨城大学学務情報MCP"><span class="mark">IU</span><span>茨城大学学務情報MCP</span></a>
+      <a class="brand" href="/" aria-label="茨城大学 学務情報MCPサーバ"><span class="mark">IU</span><span>茨城大学 学務情報MCPサーバ</span></a>
       <div class="links">
         <a href="#usage">できること</a>
         <a href="#coverage">収録年度</a>
@@ -598,9 +589,9 @@ export const SITE_HTML = `<!doctype html>
     <section class="hero">
       <div class="shell hero-grid">
         <div class="hero-copy">
-          <div class="eyebrow"><span class="rule"></span>Unofficial academic search for AI tools</div>
-          <h1>茨城大学学務情報MCP</h1>
-          <p class="lead">CodexやClaude CodeなどのAIツールから、茨城大学のシラバスや履修要項PDFを探せるようにする非公式サービスです。現在は授業検索と工学部履修案内PDFの本文検索に対応しています。</p>
+          <div class="eyebrow"><span class="rule"></span>【非公式】 学務情報検索サービス</div>
+          <h1>茨城大学 学務情報MCPサーバ</h1>
+          <p class="lead"><span>CodexやClaude CodeなどのAIツールから、茨城大学のシラバスや履修要項PDFを探せるようにする非公式サービスです。</span><br><span>現在は授業検索と工学部履修案内PDFの本文検索に対応しています。</span></p>
           <div class="actions">
             <a class="button" href="#connect">接続方法を見る</a>
             <a class="button secondary" href="#tools">ツール仕様を見る</a>
@@ -747,25 +738,6 @@ export const SITE_HTML = `<!doctype html>
             </div>
             <button class="copy light" data-copy="endpoint">Copy</button>
           </div>
-          <div class="connect-grid">
-            <div class="console">
-              <div class="console-head"><span>Codex</span><button class="copy" data-copy="codex">Copy</button></div>
-              <pre><code id="copy-codex">codex mcp add iu-mcp --url https://iu.mcp.uwaja.net/mcp</code></pre>
-            </div>
-            <div class="console">
-              <div class="console-head"><span>~/.codex/config.toml</span><button class="copy" data-copy="config">Copy</button></div>
-              <pre><code id="copy-config">[mcp_servers.iu-mcp]
-enabled = true
-url = "https://iu.mcp.uwaja.net/mcp"</code></pre>
-            </div>
-            <div class="console">
-              <div class="console-head"><span>Claude Code</span><button class="copy" data-copy="claude">Copy</button></div>
-              <pre><code id="copy-claude">claude mcp add --transport http \\
-  --scope project \\
-  iu-mcp \\
-  https://iu.mcp.uwaja.net/mcp</code></pre>
-            </div>
-          </div>
         </div>
         <p class="notice">このサービスは茨城大学公式ではありません。公開情報のみを扱い、履修判断や提出前の最終確認では必ず大学の公式情報を優先してください。</p>
       </div>
@@ -839,7 +811,7 @@ url = "https://iu.mcp.uwaja.net/mcp"</code></pre>
 
   <footer>
     <div class="shell footer-row">
-      <span>茨城大学学務情報MCP</span>
+      <span>茨城大学学務情報</span>
       <span>非公式・読み取り専用。最終確認は大学の公式情報で行ってください。</span>
     </div>
   </footer>
