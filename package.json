@@ -11,6 +11,7 @@
     "d1:migrate": "wrangler d1 execute ibaraki_syllabus --remote --file migrations/0001_schema.sql",
     "deploy": "wrangler deploy",
     "export:d1": "python jobs/syllabus-crawler/export-d1-seed.py",
+    "pdf:crawl": "python jobs/pdf-source-crawler/crawl-pdf-source.py",
     "pdf:import": "python jobs/pdf-importer/import-pdf.py",
     "pdf:export:d1": "python jobs/pdf-importer/export-d1-seed.py",
     "dev": "wrangler dev"

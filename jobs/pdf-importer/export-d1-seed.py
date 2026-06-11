@@ -20,6 +20,23 @@ DOCUMENT_COLUMNS = [
     "imported_at",
 ]
 
+FILE_COLUMNS = [
+    "file_id",
+    "source_page_url",
+    "source_url",
+    "title",
+    "content_sha256",
+    "etag",
+    "last_modified",
+    "content_length",
+    "status",
+    "document_id",
+    "first_seen_at",
+    "last_seen_at",
+    "imported_at",
+    "missing_at",
+]
+
 CHUNK_COLUMNS = [
     "chunk_id",
     "document_id",
@@ -38,11 +55,12 @@ def main():
     parser.add_argument("--out", default=str(DEFAULT_OUT))
     parser.add_argument("--chunk-dir", default="")
     parser.add_argument("--chunk-size", type=int, default=0)
+    parser.add_argument("--mode", choices=["replace", "upsert"], default="replace")
     args = parser.parse_args()
 
     with sqlite3.connect(args.db) as conn:
         conn.row_factory = sqlite3.Row
-        statements = list(build_statements(conn))
+        statements = list(build_statements(conn, args.mode))
 
     if args.chunk_size > 0:
         chunk_dir = Path(args.chunk_dir) if args.chunk_dir else DEFAULT_CHUNK_DIR
@@ -53,10 +71,15 @@ def main():
     print(json.dumps({"ok": True, **result}, ensure_ascii=False, indent=2))
 
 
-def build_statements(conn):
-    yield "DELETE FROM pdf_chunks;\n"
-    yield "DELETE FROM pdf_documents;\n"
+def build_statements(conn, mode):
+    if mode == "replace":
+        yield "DELETE FROM pdf_chunks;\n"
+        yield "DELETE FROM pdf_documents;\n"
+        yield "DELETE FROM pdf_files;\n"
+    for row in conn.execute("SELECT * FROM pdf_files ORDER BY source_url, first_seen_at, file_id"):
+        yield insert_sql("pdf_files", FILE_COLUMNS, row)
     for row in conn.execute("SELECT * FROM pdf_documents ORDER BY document_id"):
+        yield delete_document_chunks_by_source_url(row["source_url"])
         yield insert_sql("pdf_documents", DOCUMENT_COLUMNS, row)
     for row in conn.execute("SELECT * FROM pdf_chunks ORDER BY document_id, chunk_index"):
         yield insert_sql("pdf_chunks", CHUNK_COLUMNS, row)
@@ -101,7 +124,19 @@ def write_chunk(chunk_dir, index, statements):
 def insert_sql(table, columns, row):
     quoted = ", ".join(columns)
     values = ", ".join(sql_value(row[column]) for column in columns)
-    return f"INSERT OR REPLACE INTO {table} ({quoted}) VALUES ({values});\n"
+    primary_key = "source_url" if table == "pdf_documents" else columns[0]
+    updates = ", ".join(f"{column} = excluded.{column}" for column in columns if column != primary_key)
+    return (
+        f"INSERT INTO {table} ({quoted}) VALUES ({values}) "
+        f"ON CONFLICT({primary_key}) DO UPDATE SET {updates};\n"
+    )
+
+
+def delete_document_chunks_by_source_url(source_url):
+    return (
+        "DELETE FROM pdf_chunks "
+        f"WHERE document_id IN (SELECT document_id FROM pdf_documents WHERE source_url = {sql_value(source_url)});\n"
+    )
 
 
 def sql_value(value):

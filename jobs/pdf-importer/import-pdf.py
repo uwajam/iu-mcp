@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import re
 import sqlite3
@@ -29,24 +30,43 @@ def main():
     parser.add_argument("--title", default=DEFAULT_TITLE)
     parser.add_argument("--category", default=DEFAULT_CATEGORY)
     parser.add_argument("--academic-year", type=int, default=2026)
+    parser.add_argument("--source-page-url", default="")
+    parser.add_argument("--pdf-path", default="")
+    parser.add_argument("--file-id", default="")
+    parser.add_argument("--sha256", default="")
+    parser.add_argument("--etag", default="")
+    parser.add_argument("--last-modified", default="")
+    parser.add_argument("--content-length", type=int, default=0)
     parser.add_argument("--pdf-dir", default=str(DEFAULT_PDF_DIR))
     parser.add_argument("--max-chars", type=int, default=1600)
     args = parser.parse_args()
 
     now = datetime.now(timezone.utc).isoformat()
-    pdf_path = download_pdf(args.source_url, Path(args.pdf_dir), args.document_id)
+    if args.pdf_path:
+        pdf_path = Path(args.pdf_path)
+        data = pdf_path.read_bytes()
+    else:
+        pdf_path, data, response_metadata = download_pdf(args.source_url, Path(args.pdf_dir), args.document_id)
+        args.etag = args.etag or response_metadata["etag"]
+        args.last_modified = args.last_modified or response_metadata["last_modified"]
+        args.content_length = args.content_length or response_metadata["content_length"]
+    content_sha256 = args.sha256 or sha256_hex(data)
+    file_id = args.file_id or f"{args.document_id}:{content_sha256[:16]}"
     pages = extract_pages(pdf_path)
     chunks = chunk_pages(pages, args.max_chars)
 
     with sqlite3.connect(args.db) as conn:
         apply_schema(conn)
-        replace_document(conn, args, len(pages), chunks, now)
+        replace_document(conn, args, file_id, content_sha256, len(pages), chunks, now)
 
     print(json.dumps({
         "ok": True,
+        "fileId": file_id,
         "documentId": args.document_id,
         "title": args.title,
         "sourceUrl": args.source_url,
+        "sourcePageUrl": args.source_page_url,
+        "sha256": content_sha256,
         "pdfPath": str(pdf_path),
         "pages": len(pages),
         "chunks": len(chunks),
@@ -59,12 +79,17 @@ def download_pdf(source_url, pdf_dir, document_id):
     out_path = pdf_dir / f"{document_id}.pdf"
     request = Request(source_url, headers={"User-Agent": USER_AGENT})
     with urlopen(request, timeout=60) as response:
-        content_type = response.headers.get("content-type", "")
+        headers = response.headers
+        content_type = headers.get("content-type", "")
         data = response.read()
     if not data.startswith(b"%PDF"):
         raise RuntimeError(f"Downloaded content is not a PDF: content-type={content_type}")
     out_path.write_bytes(data)
-    return out_path
+    return out_path, data, {
+        "etag": headers.get("etag", ""),
+        "last_modified": headers.get("last-modified", ""),
+        "content_length": int(headers.get("content-length") or len(data)),
+    }
 
 
 def extract_pages(pdf_path):
@@ -141,13 +166,61 @@ def normalize_text(text):
     return re.sub(r"\s+", " ", text).lower()
 
 
+def sha256_hex(data):
+    return hashlib.sha256(data).hexdigest()
+
+
 def apply_schema(conn):
     conn.executescript(MIGRATION.read_text(encoding="utf-8"))
 
 
-def replace_document(conn, args, page_count, chunks, imported_at):
+def replace_document(conn, args, file_id, content_sha256, page_count, chunks, imported_at):
+    old_documents = conn.execute(
+        "SELECT document_id FROM pdf_documents WHERE source_url = ? OR document_id = ?",
+        (args.source_url, args.document_id),
+    ).fetchall()
+    for row in old_documents:
+        conn.execute("DELETE FROM pdf_chunks WHERE document_id = ?", (row[0],))
+    conn.execute("DELETE FROM pdf_documents WHERE source_url = ? OR document_id = ?", (args.source_url, args.document_id))
     conn.execute("DELETE FROM pdf_chunks WHERE document_id = ?", (args.document_id,))
-    conn.execute("DELETE FROM pdf_documents WHERE document_id = ?", (args.document_id,))
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO pdf_files (
+          file_id, source_page_url, source_url, title, content_sha256, etag, last_modified,
+          content_length, status, document_id, first_seen_at, last_seen_at, imported_at, missing_at
+        ) VALUES (
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          'active',
+          ?,
+          COALESCE((SELECT first_seen_at FROM pdf_files WHERE file_id = ?), ?),
+          ?,
+          ?,
+          NULL
+        )
+        """,
+        (
+            file_id,
+            args.source_page_url or args.source_url,
+            args.source_url,
+            args.title,
+            content_sha256,
+            args.etag,
+            args.last_modified,
+            args.content_length,
+            args.document_id,
+            file_id,
+            imported_at,
+            imported_at,
+            imported_at,
+        ),
+    )
     conn.execute(
         """
         INSERT INTO pdf_documents (

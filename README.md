@@ -140,7 +140,22 @@ python jobs/syllabus-crawler/export-d1-seed.py --db work/ibaraki_syllabus.sqlite
 
 ## Import PDF Data
 
-最初のPDF検索対象として、工学部の履修要項PDFを取り込めます。
+工学部履修案内ページをPDF一覧ページとして扱い、毎日クロールしてPDF差分を検知します。
+
+```text
+source page: https://www.eng.ibaraki.ac.jp/education/class/
+```
+
+source crawlerは `.pdf` リンクを抽出し、相対URLを絶対URLへ正規化し、PDF本体のSHA-256 hashを計算します。同じURLでもhashが変わった場合は新しい版として扱い、新規または変更されたPDFだけをimporterに渡します。削除されたPDFリンクはすぐ消さず、`pdf_files.status = 'missing'` にします。
+
+ローカルで試す場合:
+
+```sh
+python jobs/pdf-source-crawler/crawl-pdf-source.py --db work/iu_mcp.sqlite --limit 3
+python jobs/pdf-importer/export-d1-seed.py --db work/iu_mcp.sqlite --chunk-size 500 --mode upsert
+```
+
+単体PDFを直接取り込むこともできます。
 
 ```sh
 python jobs/pdf-importer/import-pdf.py --db work/iu_mcp.sqlite
@@ -156,6 +171,8 @@ source_url: https://www.eng.ibaraki.ac.jp/common/education/class/2026-course-reg
 ```
 
 PDF全体をLLMへ渡さず、job側でページ単位のテキスト抽出、チャンク化、SQLite/D1投入用seed生成を行います。
+
+GitHub Actionsの `Update PDF sources D1` は毎日 19:35 UTC、日本時間では毎日 04:35 に実行します。Actions cacheで前回のSQLite状態を復元し、hashが同じPDFは再importしません。
 
 ## HTTP API
 
