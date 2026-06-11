@@ -79,7 +79,7 @@ jobs:
 
       - name: Crawl syllabus into SQLite
         run: |
-          python scripts/crawl-syllabus.py \
+          python jobs/syllabus-crawler/crawl-syllabus.py \
             --year "$YEAR" \
             --start-page "$START_PAGE" \
             --end-page "$END_PAGE" \
@@ -92,7 +92,7 @@ jobs:
             --db work/ibaraki_syllabus.sqlite
 
       - name: Export D1 seed chunks
-        run: python scripts/export-d1-seed.py --db work/ibaraki_syllabus.sqlite --chunk-size 500
+        run: python jobs/syllabus-crawler/export-d1-seed.py --db work/ibaraki_syllabus.sqlite --chunk-size 500
 
       - name: Apply D1 schema
         run: npx wrangler d1 execute ibaraki_syllabus --remote --file migrations/0001_schema.sql

@@ -1,16 +1,16 @@
 {
-  "name": "ibaraki-syllabus-worker",
+  "name": "iu-mcp",
   "version": "0.1.0",
-  "description": "Cloudflare Workers/D1 API and MCP endpoint for Ibaraki University syllabus data.",
+  "description": "MCP gateway for public Ibaraki University academic information.",
   "type": "module",
   "scripts": {
-    "check": "node --check src/worker.js",
+    "check": "node --check src/worker.js && node --check apps/gateway/src/index.js && node --check apps/gateway/src/site.js && node --check services/syllabus/src/index.js && node --check services/syllabus/src/repository.js && node --check packages/shared/src/http.js",
     "cf:login": "wrangler login",
     "cf:whoami": "wrangler whoami",
     "d1:create": "wrangler d1 create ibaraki_syllabus",
     "d1:migrate": "wrangler d1 execute ibaraki_syllabus --remote --file migrations/0001_schema.sql",
     "deploy": "wrangler deploy",
-    "export:d1": "python scripts/export-d1-seed.py",
+    "export:d1": "python jobs/syllabus-crawler/export-d1-seed.py",
     "dev": "wrangler dev"
   },
   "engines": {
