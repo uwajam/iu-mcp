@@ -4,113 +4,150 @@ export const SITE_HTML = `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>茨城大学学務情報MCP</title>
-  <meta name="description" content="茨城大学の公開学務情報をAIから検索できる読み取り専用MCP endpointです。">
+  <meta name="description" content="茨城大学の公開学務情報を、CodexやClaude CodeなどのAIツールから検索できる非公式MCPです。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&family=Shippori+Mincho:wght@700;800&display=swap" rel="stylesheet">
 <style>
     :root {
       color-scheme: light;
-      --ink: #17201b;
-      --muted: #5e6862;
-      --line: #d9dfda;
-      --soft: #f4f7f4;
-      --wash: #eef5f1;
-      --brand: #176b4b;
-      --brand-2: #1f4f7a;
-      --accent: #b34b2f;
+      --ink: #161b19;
+      --subtle: #49524e;
+      --muted: #6b746f;
+      --line: #d8ddd7;
+      --paper: #f8f6ef;
+      --paper-2: #eeeee4;
       --panel: #ffffff;
-      --code: #111916;
+      --green: #1b6b4d;
+      --blue: #244d73;
+      --rust: #a2472d;
+      --code: #111716;
+      --code-line: rgba(232, 246, 237, .13);
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
       color: var(--ink);
-      background: #fbfcfb;
-      font-family: Inter, "Noto Sans JP", "Yu Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fbfbf8;
+      font-family: "Noto Sans JP", Inter, "Yu Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.72;
+      text-rendering: optimizeLegibility;
     }
     a { color: inherit; }
-    .shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    .shell { width: min(1160px, calc(100% - 40px)); margin: 0 auto; }
     header {
       position: sticky;
       top: 0;
       z-index: 10;
-      border-bottom: 1px solid rgba(23, 32, 27, .1);
-      background: rgba(251, 252, 251, .9);
-      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(22, 27, 25, .1);
+      background: rgba(251, 251, 248, .88);
+      backdrop-filter: blur(16px);
     }
     nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      min-height: 64px;
-      gap: 20px;
+      min-height: 66px;
+      gap: 24px;
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 750;
+      gap: 12px;
+      font-weight: 800;
       text-decoration: none;
+      white-space: nowrap;
     }
     .mark {
       display: grid;
       place-items: center;
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--line);
-      background: var(--wash);
-      color: var(--brand);
-      font-weight: 800;
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      border: 1px solid #cbd5cd;
+      background: #f2f4ed;
+      color: var(--green);
+      font-size: 14px;
+      font-weight: 900;
+      border-radius: 6px;
+      letter-spacing: 0;
     }
     .links {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 20px;
       color: var(--muted);
       font-size: 14px;
     }
     .links a { text-decoration: none; }
     .links a:hover { color: var(--ink); }
     .hero {
-      padding: 86px 0 58px;
+      position: relative;
+      overflow: hidden;
+      padding: 74px 0 58px;
       border-bottom: 1px solid var(--line);
       background:
-        linear-gradient(180deg, #fbfcfb 0%, #f1f6f2 100%);
+        linear-gradient(90deg, rgba(22, 27, 25, .045) 1px, transparent 1px),
+        linear-gradient(180deg, #fbfbf8 0%, var(--paper) 100%);
+      background-size: 72px 100%, auto;
+    }
+    .hero:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.55), transparent 38%),
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,.48) 50%, transparent 100%);
     }
     .hero-grid {
+      position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
-      gap: 52px;
-      align-items: center;
+      grid-template-columns: 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+    .hero-copy {
+      max-width: 1050px;
+      padding: 28px 0 34px;
+      border-top: 1px solid rgba(22, 27, 25, .18);
+      border-bottom: 1px solid rgba(22, 27, 25, .18);
     }
     .eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      color: var(--brand);
-      font-size: 14px;
-      font-weight: 700;
+      gap: 10px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
       margin-bottom: 18px;
     }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--brand);
+    .rule {
+      width: 38px;
+      height: 1px;
+      background: var(--green);
     }
     h1 {
       margin: 0;
-      font-size: clamp(40px, 7vw, 78px);
-      line-height: 1.05;
+      max-width: none;
+      font-size: 70px;
+      line-height: 1.08;
       letter-spacing: 0;
-      max-width: 760px;
+      font-family: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      font-weight: 800;
+      word-break: keep-all;
+      white-space: nowrap;
+      font-feature-settings: "palt";
+      text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
     }
     .lead {
       margin: 24px 0 0;
-      max-width: 700px;
-      color: var(--muted);
+      max-width: 860px;
+      color: var(--subtle);
       font-size: 18px;
+      word-break: keep-all;
     }
     .actions {
       display: flex;
@@ -128,89 +165,217 @@ export const SITE_HTML = `<!doctype html>
       background: var(--ink);
       color: #fff;
       text-decoration: none;
-      font-weight: 700;
-      border-radius: 8px;
+      font-weight: 800;
+      border-radius: 6px;
     }
     .button.secondary {
-      background: transparent;
+      background: rgba(255,255,255,.44);
       color: var(--ink);
-      border-color: var(--line);
+      border-color: #cbd2cc;
     }
+    .button:hover { transform: translateY(-1px); }
     .status-row {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 28px;
+      margin-top: 26px;
+      max-width: 880px;
     }
     .status {
-      padding: 7px 10px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.65);
+      min-height: 70px;
+      border-top: 1px solid rgba(22, 27, 25, .18);
+      padding-top: 12px;
+    }
+    .status b {
+      display: block;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .status span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .hero-panel {
+      border: 1px solid #cdd6ce;
+      background: rgba(255, 255, 255, .82);
+      border-radius: 8px;
+      box-shadow: 0 18px 42px rgba(38, 45, 39, .1);
+      overflow: hidden;
+      max-width: 1040px;
+    }
+    .panel-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 246, 239, .88);
+    }
+    .panel-title {
+      display: block;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+    .panel-meta {
+      display: block;
       color: var(--muted);
       font-size: 13px;
+      margin-top: 2px;
+    }
+    .endpoint-badge {
+      border: 1px solid #cad3ce;
+      color: var(--green);
+      background: #f5f7f2;
       border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .panel-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .panel-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 18px 20px;
+      border-right: 1px solid var(--line);
+      border-bottom: 0;
+    }
+    .panel-row:last-child { border-right: 0; }
+    .panel-key {
+      color: var(--blue);
+      font: 800 13px/1.45 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      overflow-wrap: anywhere;
+    }
+    .panel-row p {
+      margin: 0;
+      color: var(--subtle);
+      font-size: 14px;
+      line-height: 1.65;
     }
     .console {
-      border: 1px solid #cdd7cf;
-      background: #101713;
-      color: #d9f5e3;
+      border: 1px solid #ced7cf;
+      background: var(--code);
+      color: #dff3e6;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 18px 45px rgba(22, 37, 29, .14);
+      box-shadow: 0 18px 45px rgba(22, 37, 29, .12);
     }
     .console-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
       padding: 12px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.1);
-      color: #9fc2ad;
+      border-bottom: 1px solid var(--code-line);
+      color: #a8c8b5;
       font-size: 13px;
     }
     .copy {
-      min-width: 62px;
-      height: 28px;
+      min-width: 64px;
+      height: 30px;
       border: 1px solid rgba(217,245,227,.28);
       background: rgba(255,255,255,.08);
       color: #d9f5e3;
       font: 12px/1 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      border-radius: 7px;
+      border-radius: 6px;
       cursor: pointer;
     }
     .copy:hover { background: rgba(255,255,255,.16); }
-    .lights { display: flex; gap: 7px; }
-    .lights span { width: 10px; height: 10px; border-radius: 50%; background: #7bb08e; }
-    .lights span:nth-child(2) { background: #d0ad5b; }
-    .lights span:nth-child(3) { background: #bf6b58; }
     pre {
       margin: 0;
       overflow-x: auto;
       padding: 18px;
       color: #e6f7ea;
       background: var(--code);
-      font: 13px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font: 13px/1.62 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     }
     code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
-    section { padding: 72px 0; }
+    section { padding: 76px 0; }
     .section-head {
-      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: minmax(240px, .42fr) minmax(0, .58fr);
+      gap: 34px;
+      align-items: end;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
     }
     h2 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 44px);
-      line-height: 1.18;
+      font-size: 40px;
+      line-height: 1.16;
       letter-spacing: 0;
     }
     .section-note {
-      margin: 12px 0 0;
+      margin: 0;
       color: var(--muted);
       font-size: 16px;
       line-height: 1.75;
+      word-break: keep-all;
     }
-    .steps, .usecases, .tools {
+    .steps, .usecases {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
+    }
+    .coverage-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .coverage-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 24px;
+    }
+    .coverage-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+    .coverage-count {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+      padding-top: 4px;
+    }
+    .year-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 34px;
+    }
+    .year-chip {
+      border: 1px solid var(--line);
+      background: #fbfbf8;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .year-chip.latest {
+      border-color: rgba(27, 107, 77, .38);
+      background: #f0f6f1;
+      color: var(--green);
+    }
+    .loading-note {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
     }
     .item {
       border: 1px solid var(--line);
@@ -219,9 +384,10 @@ export const SITE_HTML = `<!doctype html>
       padding: 22px;
     }
     .num {
-      color: var(--brand);
-      font-weight: 800;
-      font-size: 13px;
+      color: var(--green);
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .08em;
       margin-bottom: 14px;
     }
     h3 {
@@ -236,15 +402,17 @@ export const SITE_HTML = `<!doctype html>
     }
     .tool {
       border-top: 1px solid var(--line);
-      padding: 24px 0;
+      padding: 26px 0;
       display: grid;
-      grid-template-columns: 220px minmax(0, 1fr);
-      gap: 28px;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 30px;
     }
+    .tool:first-of-type { border-top: 0; }
     .tool-name {
-      color: var(--brand-2);
-      font-weight: 800;
+      color: var(--blue);
+      font-weight: 850;
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      overflow-wrap: anywhere;
     }
     .params {
       display: flex;
@@ -254,6 +422,7 @@ export const SITE_HTML = `<!doctype html>
     }
     .params span {
       border: 1px solid var(--line);
+      background: #fbfbf8;
       color: var(--muted);
       padding: 5px 8px;
       border-radius: 999px;
@@ -261,15 +430,44 @@ export const SITE_HTML = `<!doctype html>
     }
     .connect {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 22px;
+    }
+    .connect-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .connect-step {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .connect-step strong {
+      display: block;
+      color: var(--green);
+      font-size: 13px;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+    }
+    .connect-step h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .connect-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .connect-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
     }
-    .connect.stack {
-      grid-template-columns: 1fr;
-    }
     .notice {
-      border-left: 4px solid var(--accent);
-      background: #fff7f3;
+      border-left: 4px solid var(--rust);
+      background: #fff8f4;
       padding: 16px 18px;
       color: #5f3428;
       border-radius: 8px;
@@ -278,13 +476,12 @@ export const SITE_HTML = `<!doctype html>
     .endpoint {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
+      gap: 16px;
       align-items: center;
       border: 1px solid var(--line);
       background: var(--panel);
       border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 18px;
+      padding: 18px 20px;
     }
     .endpoint-label {
       display: block;
@@ -295,15 +492,15 @@ export const SITE_HTML = `<!doctype html>
     .endpoint code {
       display: block;
       color: var(--ink);
-      font-size: 15px;
+      font-size: 16px;
       overflow-wrap: anywhere;
     }
     .copy.light {
       border-color: var(--line);
-      background: var(--soft);
+      background: var(--paper);
       color: var(--ink);
     }
-    .copy.light:hover { background: var(--wash); }
+    .copy.light:hover { background: var(--paper-2); }
     .faq-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -321,18 +518,19 @@ export const SITE_HTML = `<!doctype html>
     }
     .example-row {
       display: grid;
-      grid-template-columns: 112px minmax(0, 1fr);
+      grid-template-columns: 116px minmax(0, 1fr);
       gap: 18px;
       padding: 18px 20px;
     }
     .example-row + .example-row {
       border-top: 1px solid var(--line);
-      background: var(--soft);
+      background: #f7f8f3;
     }
     .example-label {
-      color: var(--brand);
-      font-weight: 800;
+      color: var(--green);
+      font-weight: 900;
       font-size: 13px;
+      letter-spacing: .06em;
     }
     .example p {
       margin: 0;
@@ -347,6 +545,7 @@ export const SITE_HTML = `<!doctype html>
       padding: 28px 0 44px;
       color: var(--muted);
       font-size: 14px;
+      background: #f6f6f0;
     }
     .footer-row {
       display: flex;
@@ -354,13 +553,29 @@ export const SITE_HTML = `<!doctype html>
       gap: 20px;
       flex-wrap: wrap;
     }
-    @media (max-width: 860px) {
-      .hero-grid, .connect, .tool { grid-template-columns: 1fr; }
-      .steps, .usecases, .tools, .faq-grid { grid-template-columns: 1fr; }
+    @media (max-width: 920px) {
+      .hero-grid, .section-head, .tool, .connect-grid, .connect-steps { grid-template-columns: 1fr; }
+      .steps, .usecases, .coverage-grid, .faq-grid { grid-template-columns: 1fr; }
       .endpoint { grid-template-columns: 1fr; }
-      .example-row { grid-template-columns: 1fr; gap: 8px; }
-      .hero { padding-top: 56px; }
+      .hero { padding-top: 58px; }
+      h1 { font-size: 52px; white-space: normal; }
+      h2 { font-size: 32px; }
       .links { display: none; }
+      .status-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .panel-list { grid-template-columns: 1fr; }
+      .panel-row {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .panel-row:last-child { border-bottom: 0; }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 28px, 1160px); }
+      h1 { font-size: 40px; }
+      .lead { font-size: 16px; }
+      .status-row { grid-template-columns: 1fr; }
+      .panel-top, .panel-row, .example-row { grid-template-columns: 1fr; }
+      .brand span:last-child { white-space: normal; line-height: 1.25; }
     }
   </style>
 </head>
@@ -369,7 +584,8 @@ export const SITE_HTML = `<!doctype html>
     <nav class="shell">
       <a class="brand" href="/" aria-label="茨城大学学務情報MCP"><span class="mark">IU</span><span>茨城大学学務情報MCP</span></a>
       <div class="links">
-        <a href="#usage">使い方</a>
+        <a href="#usage">できること</a>
+        <a href="#coverage">収録年度</a>
         <a href="#tools">ツール</a>
         <a href="#connect">接続方法</a>
         <a href="#examples">質問例</a>
@@ -381,45 +597,88 @@ export const SITE_HTML = `<!doctype html>
   <main>
     <section class="hero">
       <div class="shell hero-grid">
-        <div>
-          <div class="eyebrow"><span class="dot"></span>非公式 / 読み取り専用 / 公式URL付き / 認証不要</div>
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="rule"></span>Unofficial academic search for AI tools</div>
           <h1>茨城大学学務情報MCP</h1>
-          <p class="lead">Codex や Claude Code から茨城大学の公開学務情報を検索できます。現在はシラバス検索のみ提供しており、履修案内PDF、学務文書PDF、図書館キャッシュAPIを後から束ねられるGateway構成です。</p>
+          <p class="lead">CodexやClaude CodeなどのAIツールから、茨城大学のシラバスや履修要項PDFを探せるようにする非公式サービスです。現在は授業検索と工学部履修案内PDFの本文検索に対応しています。</p>
           <div class="actions">
             <a class="button" href="#connect">接続方法を見る</a>
             <a class="button secondary" href="#tools">ツール仕様を見る</a>
           </div>
           <div class="status-row">
-            <span class="status">認証不要</span>
-            <span class="status">2026年度データ</span>
-            <span class="status">定期更新</span>
+            <div class="status"><b>認証不要</b><span>URLを登録するだけで利用</span></div>
+            <div class="status"><b>公開情報のみ</b><span>個人情報や学内ログインは不要</span></div>
+            <div class="status"><b>公式URL付き</b><span>PDFはページ番号も表示</span></div>
+            <div class="status"><b>定期更新</b><span>シラバスとPDFの変更を収集</span></div>
           </div>
         </div>
-        <div class="console" aria-label="MCP request example">
-          <div class="console-head"><span>syllabus.search_courses</span></div>
-          <pre><code>syllabus.search_courses({
-  academicYear: 2026,
-  query: "地域社会",
-  limit: 3
-})
-
-syllabus.get_course({
-  courseId: "ibaraki:2026:13_LA0007"
-})</code></pre>
-        </div>
+        <aside class="hero-panel" aria-label="available MCP tools">
+          <div class="panel-top">
+            <div>
+              <span class="panel-title">AIツールに登録するURL</span>
+              <span class="panel-meta">https://iu.mcp.uwaja.net/mcp</span>
+            </div>
+            <span class="endpoint-badge">利用可</span>
+          </div>
+          <div class="panel-list">
+            <div class="panel-row">
+              <div class="panel-key">syllabus.search_courses</div>
+              <p>授業名、教員名、科目番号、曜日時限、概要からシラバス候補を検索します。</p>
+            </div>
+            <div class="panel-row">
+              <div class="panel-key">syllabus.get_course</div>
+              <p>courseIdや公式URLから、授業概要、到達目標、成績評価などの詳細を取得します。</p>
+            </div>
+            <div class="panel-row">
+              <div class="panel-key">pdf.search_documents</div>
+              <p>履修要項などのPDF本文を検索し、該当チャンク、ページ番号、文書URLを返します。</p>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 
     <section id="usage">
       <div class="shell">
         <div class="section-head">
-          <h2>何に使えるか</h2>
-          <p class="section-note">時間割の候補出し、授業概要の確認、科目コードからの詳細取得を、AIとの会話に寄せるための入口です。</p>
+          <h2>できること</h2>
+          <p class="section-note">AIに質問するだけで、授業候補の探索、シラバス詳細の確認、履修要項PDFの該当箇所探しができるようになります。</p>
         </div>
         <div class="steps">
-          <article class="item"><div class="num">01</div><h3>条件を自然文で伝える</h3><p>「火曜2限」「LAから始まる科目」「地域社会について学べる授業」など、曖昧なまま相談できます。</p></article>
-          <article class="item"><div class="num">02</div><h3>MCPが内部APIを呼ぶ</h3><p>MCP GatewayはDBを直接読まず、保存済みデータを返すシラバスAPIへ問い合わせます。</p></article>
-          <article class="item"><div class="num">03</div><h3>公式URLで確認する</h3><p>返却結果には公式シラバスURLを含めます。履修判断の最後は必ず公式情報で確認してください。</p></article>
+          <article class="item"><div class="num">01</div><h3>自然文で探す</h3><p>「水曜2限の専門科目」「科目番号がT3から始まる授業」「CAP制について書かれた箇所」のように相談できます。</p></article>
+          <article class="item"><div class="num">02</div><h3>公式サービスへ戻れる</h3><p>検索結果には公式サービスのURLを付けます。PDF検索ではページ番号と本文チャンクも一緒に返します。</p></article>
+          <article class="item"><div class="num">03</div><h3>公開情報だけ扱う</h3><p>個人の履修情報、manaba、メール、休講情報は扱いません。大学が公開しているページやPDFだけを検索対象にします。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="coverage">
+      <div class="shell">
+        <div class="section-head">
+          <h2>収録年度</h2>
+          <p class="section-note">現在検索できる年度です。AIに「2026年度に絞って」のように伝えると、その年度だけを対象にできます。</p>
+        </div>
+        <div class="coverage-grid">
+          <article class="coverage-card">
+            <div class="coverage-top">
+              <div>
+                <h3>シラバス</h3>
+                <p class="loading-note">授業検索で利用できる年度</p>
+              </div>
+              <span class="coverage-count" id="syllabus-count">読み込み中</span>
+            </div>
+            <div class="year-list" id="syllabus-years"><span class="loading-note">年度を取得しています</span></div>
+          </article>
+          <article class="coverage-card">
+            <div class="coverage-top">
+              <div>
+                <h3>PDF</h3>
+                <p class="loading-note">履修要項PDF検索で利用できる年度</p>
+              </div>
+              <span class="coverage-count" id="pdf-count">読み込み中</span>
+            </div>
+            <div class="year-list" id="pdf-years"><span class="loading-note">年度を取得しています</span></div>
+          </article>
         </div>
       </div>
     </section>
@@ -428,7 +687,7 @@ syllabus.get_course({
       <div class="shell">
         <div class="section-head">
           <h2>公開ツール</h2>
-          <p class="section-note">ツール名は名前空間付きです。PDFや図書館機能を追加しても衝突しにくい形にしています。</p>
+          <p class="section-note">AIツールから呼び出せる機能の一覧です。授業を探す、授業の詳細を見る、PDF本文から該当箇所を探す、という用途に分かれています。</p>
         </div>
         <div class="tool">
           <div class="tool-name">syllabus.search_courses</div>
@@ -443,7 +702,15 @@ syllabus.get_course({
           <div>
             <h3>シラバス詳細を取得する</h3>
             <p><code>courseId</code>、<code>syllabusId</code>、科目番号、時間割コード、公式URLから詳細を取得します。</p>
-            <div class="params"><span>courseId</span><span>sections</span><span>overview</span><span>officialUrl</span></div>
+            <div class="params"><span>courseId</span><span>overview</span><span>sections</span><span>officialUrl</span></div>
+          </div>
+        </div>
+        <div class="tool">
+          <div class="tool-name">pdf.search_documents</div>
+          <div>
+            <h3>PDF本文を検索する</h3>
+            <p>履修要項などの公開PDFから、関連する本文チャンク、ページ番号、文書URLを返します。</p>
+            <div class="params"><span>q</span><span>query</span><span>queries</span><span>academicYear</span><span>documentId</span><span>mode</span><span>includeToc</span><span>limit</span></div>
           </div>
         </div>
       </div>
@@ -453,35 +720,54 @@ syllabus.get_course({
       <div class="shell">
         <div class="section-head">
           <h2>接続方法</h2>
-          <p class="section-note">認証不要のStreamable HTTP MCPです。使っているクライアントに合わせて登録してください。</p>
-        </div>
-        <div class="endpoint">
-          <div>
-            <span class="endpoint-label">MCP Server URL</span>
-            <code id="copy-endpoint">https://iu.mcp.uwaja.net/mcp</code>
-          </div>
-          <button class="copy light" data-copy="endpoint">Copy</button>
+          <p class="section-note">CodexやClaude Codeに下のURLを登録すると、会話の中でシラバス検索とPDF検索を使えるようになります。認証やAPIキーは不要です。</p>
         </div>
         <div class="connect">
-          <div class="console">
-            <div class="console-head"><span>Codex</span><button class="copy" data-copy="codex">Copy</button></div>
-            <pre><code id="copy-codex">codex mcp add iu-mcp --url https://iu.mcp.uwaja.net/mcp</code></pre>
+          <div class="connect-steps">
+            <article class="connect-step">
+              <strong>STEP 01</strong>
+              <h3>URLを確認する</h3>
+              <p>登録先は <code>/mcp</code> で終わるURLです。この説明ページのURLではなく、下のMCP Server URLを使います。</p>
+            </article>
+            <article class="connect-step">
+              <strong>STEP 02</strong>
+              <h3>クライアントに追加する</h3>
+              <p>CodexまたはClaude Codeのどちらかのコマンドを実行します。普段使うプロジェクトにだけ登録できます。</p>
+            </article>
+            <article class="connect-step">
+              <strong>STEP 03</strong>
+              <h3>質問して使う</h3>
+              <p>「授業を探して」「履修要項PDFから該当箇所を探して」のように、そのまま日本語で依頼します。</p>
+            </article>
           </div>
-          <div class="console">
-            <div class="console-head"><span>~/.codex/config.toml</span><button class="copy" data-copy="config">Copy</button></div>
-            <pre><code id="copy-config">[mcp_servers.iu-mcp]
+          <div class="endpoint">
+            <div>
+              <span class="endpoint-label">MCP Server URL</span>
+              <code id="copy-endpoint">https://iu.mcp.uwaja.net/mcp</code>
+            </div>
+            <button class="copy light" data-copy="endpoint">Copy</button>
+          </div>
+          <div class="connect-grid">
+            <div class="console">
+              <div class="console-head"><span>Codex</span><button class="copy" data-copy="codex">Copy</button></div>
+              <pre><code id="copy-codex">codex mcp add iu-mcp --url https://iu.mcp.uwaja.net/mcp</code></pre>
+            </div>
+            <div class="console">
+              <div class="console-head"><span>~/.codex/config.toml</span><button class="copy" data-copy="config">Copy</button></div>
+              <pre><code id="copy-config">[mcp_servers.iu-mcp]
 enabled = true
 url = "https://iu.mcp.uwaja.net/mcp"</code></pre>
-          </div>
-          <div class="console">
-            <div class="console-head"><span>Claude Code</span><button class="copy" data-copy="claude">Copy</button></div>
-            <pre><code id="copy-claude">claude mcp add --transport http \\
+            </div>
+            <div class="console">
+              <div class="console-head"><span>Claude Code</span><button class="copy" data-copy="claude">Copy</button></div>
+              <pre><code id="copy-claude">claude mcp add --transport http \\
   --scope project \\
   iu-mcp \\
   https://iu.mcp.uwaja.net/mcp</code></pre>
+            </div>
           </div>
         </div>
-        <p class="notice">このサービスは茨城大学公式ではありません。公開情報のみを扱い、個人の履修情報、manaba、メール、休講情報は含みません。情報が食い違う場合は、必ず大学ホームページを優先してください。</p>
+        <p class="notice">このサービスは茨城大学公式ではありません。公開情報のみを扱い、履修判断や提出前の最終確認では必ず大学の公式情報を優先してください。</p>
       </div>
     </section>
 
@@ -489,32 +775,32 @@ url = "https://iu.mcp.uwaja.net/mcp"</code></pre>
       <div class="shell">
         <div class="section-head">
           <h2>質問例</h2>
-          <p class="section-note">MCPを登録したあと、AIにこう頼むと授業検索に使えます。</p>
+          <p class="section-note">登録後は、普段の会話の中で次のように頼めます。必要に応じてAIが検索機能を呼び出します。</p>
         </div>
         <div class="example-list">
           <article class="example">
             <div class="example-row">
               <div class="example-label">質問</div>
-              <p>茨城大学で、2026年度に開講される「地域社会」について学べる授業を探して。授業名、担当教員、曜日時限、概要を短くまとめて。</p>
+              <p>茨城大学で2026年度に開講される、情報系またはデータ分析に関係する授業を探して。授業名、担当教員、曜日時限、概要を比較できる形でまとめて。</p>
             </div>
             <div class="example-row">
               <div class="example-label">回答例</div>
               <div>
-                <p>関連しそうな授業を候補として一覧にします。授業名、学期、曜日時限、担当教員、概要を見比べられる形で返します。</p>
-                <p class="muted">気になる授業があれば、そのcourseIdで詳細を開き、到達目標や成績評価まで確認できます。</p>
+                <p>条件に近い授業候補を一覧化し、気になる科目はcourseIdから詳細を開いて、到達目標や成績評価まで確認します。</p>
+                <p class="muted">授業検索には <code>syllabus.search_courses</code> と <code>syllabus.get_course</code> を使います。</p>
               </div>
             </div>
           </article>
           <article class="example">
             <div class="example-row">
               <div class="example-label">質問</div>
-              <p>茨城大学で、科目番号がLAから始まる2026年度の授業を検索して。前期に開講されるものを中心に、10件まで候補を出して。</p>
+              <p>履修要項PDFから、卒業に必要な単位数とCAP制について書かれている箇所を探して。本文抜粋、ページ番号、文書URLも出して。</p>
             </div>
             <div class="example-row">
               <div class="example-label">回答例</div>
               <div>
-                <p>LAで始まる科目を検索し、授業名、単位数、開講学期、曜日時限を一覧にします。</p>
-                <p class="muted">必要なら候補ごとにget_courseで詳細を開き、授業概要、到達目標、成績評価、履修上の注意まで確認します。</p>
+                <p>関連するPDFチャンクを検索し、該当ページ、本文抜粋、文書URLを返します。</p>
+                <p class="muted">PDF検索には <code>pdf.search_documents</code> を使います。</p>
               </div>
             </div>
           </article>
@@ -526,23 +812,24 @@ url = "https://iu.mcp.uwaja.net/mcp"</code></pre>
       <div class="shell">
         <div class="section-head">
           <h2>FAQ</h2>
+          <p class="section-note">大学公式のサービスではありません。履修登録や成績に関わる判断では、必ず大学の公式情報を確認してください。</p>
         </div>
         <div class="faq-grid">
           <article class="item faq">
             <h3>アカウントやAPIキーは必要ですか？</h3>
-            <p>不要です。公開MCP endpointとして、そのまま接続できます。</p>
-          </article>
-          <article class="item faq">
-            <h3>データは更新されますか？</h3>
-            <p>はい。定期的にシラバスを収集し直します。必要な場合は手動でも更新しています。</p>
+            <p>不要です。MCP Server URLを登録すれば、そのまま接続できます。</p>
           </article>
           <article class="item faq">
             <h3>大学サイトを毎回見に行きますか？</h3>
-            <p>いいえ。公開Workerは保存済みデータだけを読みます。クロールは低頻度のバッチで実行します。</p>
+            <p>いいえ。検索時は保存済みデータを読みます。大学サイトへの収集は、負荷をかけないよう低頻度で実行します。</p>
+          </article>
+          <article class="item faq">
+            <h3>PDFはどのように更新しますか？</h3>
+            <p>工学部履修案内ページを定期的に確認し、PDF本文のハッシュが変わったものだけ再取り込みします。</p>
           </article>
           <article class="item faq">
             <h3>何年度に対応していますか？</h3>
-            <p>現在は主に2026年度データです。収集済みの年度は <code>academicYear</code> で指定できます。</p>
+            <p>現在は主に2026年度データです。検索済みの年度は <code>academicYear</code> で指定できます。</p>
           </article>
         </div>
       </div>
@@ -553,10 +840,47 @@ url = "https://iu.mcp.uwaja.net/mcp"</code></pre>
   <footer>
     <div class="shell footer-row">
       <span>茨城大学学務情報MCP</span>
-      <span>非公式ツールです。最終確認は公式シラバスで行ってください。</span>
+      <span>非公式・読み取り専用。最終確認は大学の公式情報で行ってください。</span>
     </div>
   </footer>
   <script>
+    function renderYears(targetId, countId, years, countKey) {
+      const target = document.getElementById(targetId);
+      const count = document.getElementById(countId);
+      if (!target || !count) return;
+      if (!Array.isArray(years) || years.length === 0) {
+        target.innerHTML = '<span class="loading-note">収録年度がありません</span>';
+        count.textContent = '0件';
+        return;
+      }
+      const latest = years[0]?.academicYear;
+      target.innerHTML = years.map((year) => {
+        const value = String(year.academicYear ?? '');
+        const className = year.academicYear === latest ? 'year-chip latest' : 'year-chip';
+        return '<span class="' + className + '">' + value + '</span>';
+      }).join('');
+      const total = years.reduce((sum, year) => sum + Number(year[countKey] ?? 0), 0);
+      count.textContent = total.toLocaleString('ja-JP') + '件';
+    }
+
+    async function loadCoverage() {
+      try {
+        const [syllabus, pdf] = await Promise.all([
+          fetch('/api/syllabus/health').then((response) => response.json()),
+          fetch('/api/pdf/health').then((response) => response.json())
+        ]);
+        renderYears('syllabus-years', 'syllabus-count', syllabus.years, 'courseCount');
+        renderYears('pdf-years', 'pdf-count', pdf.years, 'documentCount');
+      } catch {
+        const syllabusYears = document.getElementById('syllabus-years');
+        const pdfYears = document.getElementById('pdf-years');
+        if (syllabusYears) syllabusYears.innerHTML = '<span class="loading-note">年度を取得できませんでした</span>';
+        if (pdfYears) pdfYears.innerHTML = '<span class="loading-note">年度を取得できませんでした</span>';
+      }
+    }
+
+    loadCoverage();
+
     document.querySelectorAll("[data-copy]").forEach((button) => {
       button.addEventListener("click", async () => {
         const target = document.getElementById("copy-" + button.dataset.copy);

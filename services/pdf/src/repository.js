@@ -71,6 +71,27 @@ export async function searchDocuments(db, args) {
   return (result.results ?? []).map(rowToSearchResult);
 }
 
+export async function getPdfStats(db) {
+  const result = await db.prepare(`
+    SELECT academic_year, COUNT(*) AS document_count
+    FROM pdf_documents
+    WHERE academic_year IS NOT NULL
+    GROUP BY academic_year
+    ORDER BY academic_year DESC
+  `).all();
+
+  const years = (result.results ?? []).map((row) => ({
+    academicYear: row.academic_year,
+    documentCount: row.document_count
+  }));
+
+  return {
+    years,
+    latestAcademicYear: years[0]?.academicYear ?? null,
+    documentCount: years.reduce((sum, year) => sum + Number(year.documentCount ?? 0), 0)
+  };
+}
+
 const TOC_SQL = `(
   c.heading = '目 次'
   OR c.heading = '目次'

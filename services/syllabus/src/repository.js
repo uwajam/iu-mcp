@@ -59,6 +59,26 @@ export async function searchCourses(db, args) {
   return (result.results ?? []).map(rowToSearchJson);
 }
 
+export async function getSyllabusStats(db) {
+  const result = await db.prepare(`
+    SELECT academic_year, COUNT(*) AS course_count
+    FROM courses
+    GROUP BY academic_year
+    ORDER BY academic_year DESC
+  `).all();
+
+  const years = (result.results ?? []).map((row) => ({
+    academicYear: row.academic_year,
+    courseCount: row.course_count
+  }));
+
+  return {
+    years,
+    latestAcademicYear: years[0]?.academicYear ?? null,
+    courseCount: years.reduce((sum, year) => sum + Number(year.courseCount ?? 0), 0)
+  };
+}
+
 export async function getCourse(db, courseId) {
   const key = String(courseId ?? "");
   if (!key) return { error: "courseId is required" };

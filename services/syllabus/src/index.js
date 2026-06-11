@@ -1,11 +1,11 @@
 import { jsonResponse } from "../../../packages/shared/src/http.js";
-import { getCourse, getCourseByYearAndSyllabusId, searchCourses } from "./repository.js";
+import { getCourse, getCourseByYearAndSyllabusId, getSyllabusStats, searchCourses } from "./repository.js";
 
 export async function handleSyllabusApiRequest(request, env) {
   const url = new URL(request.url);
 
   if (url.pathname === "/api/syllabus/health" && request.method === "GET") {
-    return jsonResponse({ ok: true, service: "iu-syllabus-service" });
+    return jsonResponse({ ok: true, service: "iu-syllabus-service", ...(await getSyllabusStats(env.DB)) });
   }
 
   if (url.pathname === "/api/syllabus/search") {

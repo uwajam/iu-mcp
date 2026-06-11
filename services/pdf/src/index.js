@@ -1,11 +1,11 @@
 import { jsonResponse } from "../../../packages/shared/src/http.js";
-import { searchDocuments } from "./repository.js";
+import { getPdfStats, searchDocuments } from "./repository.js";
 
 export async function handlePdfApiRequest(request, env) {
   const url = new URL(request.url);
 
   if (url.pathname === "/api/pdf/health" && request.method === "GET") {
-    return jsonResponse({ ok: true, service: "iu-pdf-service" });
+    return jsonResponse({ ok: true, service: "iu-pdf-service", ...(await getPdfStats(env.DB)) });
   }
 
   if (url.pathname === "/api/pdf/search") {
