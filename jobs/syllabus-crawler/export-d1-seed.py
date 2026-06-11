@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = ROOT / "work" / "ibaraki_syllabus.sqlite"
 DEFAULT_OUT = ROOT / "work" / "d1_seed.sql"
 DEFAULT_CHUNK_DIR = ROOT / "work" / "d1_seed"

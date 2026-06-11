@@ -12,13 +12,13 @@ from urllib.parse import urlencode, urljoin, urlparse
 from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, Request, build_opener
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = ROOT / "work" / "ibaraki_syllabus.sqlite"
 MIGRATION = ROOT / "migrations" / "0001_schema.sql"
 BASE_URL = "https://syllabus.ibaraki.ac.jp"
 ENTRY_URL = f"{BASE_URL}/syllabus_ref/"
 SEARCH_ACTION = f"{BASE_URL}/syllabus_ref/campussquare.do"
-USER_AGENT = "Mozilla/5.0 (compatible; iu-syllabus-mcp-crawler/0.1; +https://iu.syllabus-mcp.uwaja.net)"
+USER_AGENT = "Mozilla/5.0 (compatible; iu-mcp-syllabus-crawler/0.1; +https://syllabus.iu.mcp.uwaja.net)"
 
 
 class NoRedirect(HTTPRedirectHandler):
