@@ -3,16 +3,28 @@ export async function searchDocuments(db, args) {
   const query = String(args.q ?? args.query ?? "").trim();
   const where = [];
   const values = [];
+  let scoreSql = "0";
+  let scoreValues = [];
 
   if (query) {
-    const like = `%${escapeLike(normalizeText(query))}%`;
-    where.push(`(
-      c.text_normalized LIKE ? ESCAPE '\\'
-      OR lower(c.heading) LIKE ? ESCAPE '\\'
-      OR lower(d.title) LIKE ? ESCAPE '\\'
-      OR lower(d.source_url) LIKE ? ESCAPE '\\'
-    )`);
-    values.push(like, like, like, like);
+    const tokens = queryTokens(query);
+    const tokenConditions = [];
+    const scoreParts = [];
+    for (const token of tokens) {
+      const like = `%${escapeLike(token)}%`;
+      const condition = `(
+        c.text_normalized LIKE ? ESCAPE '\\'
+        OR lower(c.heading) LIKE ? ESCAPE '\\'
+        OR lower(d.title) LIKE ? ESCAPE '\\'
+        OR lower(d.source_url) LIKE ? ESCAPE '\\'
+      )`;
+      tokenConditions.push(condition);
+      values.push(like, like, like, like);
+      scoreParts.push(`CASE WHEN ${condition} THEN 1 ELSE 0 END`);
+      scoreValues.push(like, like, like, like);
+    }
+    where.push(`(${tokenConditions.join(" OR ")})`);
+    scoreSql = scoreParts.join(" + ");
   }
 
   if (args.documentId) {
@@ -30,14 +42,16 @@ export async function searchDocuments(db, args) {
       c.chunk_id,
       c.page_number,
       c.heading,
-      c.text
+      c.text,
+      (${scoreSql}) AS match_score
     FROM pdf_chunks c
     JOIN pdf_documents d ON d.document_id = c.document_id
   `;
   if (where.length) {
     sql += ` WHERE ${where.join(" AND ")}`;
   }
-  sql += " ORDER BY d.document_id ASC, c.page_number ASC, c.chunk_index ASC LIMIT ?";
+  sql += " ORDER BY match_score DESC, d.document_id ASC, c.page_number ASC, c.chunk_index ASC LIMIT ?";
+  values.unshift(...scoreValues);
   values.push(limit);
 
   const result = await db.prepare(sql).bind(...values).all();
@@ -62,7 +76,12 @@ function rowToSearchResult(row) {
 }
 
 function normalizeText(value) {
-  return String(value).replace(/\s+/g, " ").toLowerCase();
+  return String(value).normalize("NFKC").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function queryTokens(value) {
+  const normalized = normalizeText(value);
+  return normalized.split(/\s+/).filter(Boolean);
 }
 
 function escapeLike(value) {

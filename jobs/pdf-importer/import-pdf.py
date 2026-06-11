@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import unicodedata
 import json
 import re
 import sqlite3
@@ -163,7 +164,10 @@ def first_heading(text):
 
 
 def normalize_text(text):
-    return re.sub(r"\s+", " ", text).lower()
+    normalized = unicodedata.normalize("NFKC", text).lower()
+    collapsed = re.sub(r"\s+", " ", normalized).strip()
+    compact = re.sub(r"\s+", "", normalized)
+    return f"{collapsed} {compact}".strip()
 
 
 def sha256_hex(data):
