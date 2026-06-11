@@ -1,13 +1,14 @@
 export async function searchDocuments(db, args) {
   const limit = clampInt(args.limit ?? args.pageSize, 1, 20, 10);
-  const query = String(args.q ?? args.query ?? "").trim();
+  const queries = normalizeQueries(args);
+  const includeToc = Boolean(args.includeToc);
   const where = [];
   const values = [];
   let scoreSql = "0";
   let scoreValues = [];
 
-  if (query) {
-    const tokens = queryTokens(query);
+  if (queries.length) {
+    const tokens = uniqueTokens(queries.flatMap(queryTokens));
     const tokenConditions = [];
     const scoreParts = [];
     for (const token of tokens) {
@@ -24,7 +25,8 @@ export async function searchDocuments(db, args) {
       scoreValues.push(like, like, like, like);
     }
     where.push(`(${tokenConditions.join(" OR ")})`);
-    scoreSql = scoreParts.join(" + ");
+    const tocPenalty = includeToc ? "0" : `CASE WHEN ${TOC_SQL} THEN 4 ELSE 0 END`;
+    scoreSql = `(${scoreParts.join(" + ")}) - ${tocPenalty}`;
   }
 
   if (args.documentId) {
@@ -43,12 +45,16 @@ export async function searchDocuments(db, args) {
       c.page_number,
       c.heading,
       c.text,
-      (${scoreSql}) AS match_score
+      (${scoreSql}) AS match_score,
+      CASE WHEN ${TOC_SQL} THEN 1 ELSE 0 END AS is_toc
     FROM pdf_chunks c
     JOIN pdf_documents d ON d.document_id = c.document_id
   `;
   if (where.length) {
     sql += ` WHERE ${where.join(" AND ")}`;
+  }
+  if (!includeToc) {
+    sql += where.length ? ` AND NOT (${TOC_SQL})` : ` WHERE NOT (${TOC_SQL})`;
   }
   sql += " ORDER BY match_score DESC, d.document_id ASC, c.page_number ASC, c.chunk_index ASC LIMIT ?";
   values.unshift(...scoreValues);
@@ -57,6 +63,14 @@ export async function searchDocuments(db, args) {
   const result = await db.prepare(sql).bind(...values).all();
   return (result.results ?? []).map(rowToSearchResult);
 }
+
+const TOC_SQL = `(
+  c.heading = '目 次'
+  OR c.heading = '目次'
+  OR c.text LIKE '目 次%'
+  OR c.text LIKE '目次%'
+  OR c.text LIKE '%････････%'
+)`;
 
 function rowToSearchResult(row) {
   return {
@@ -71,8 +85,18 @@ function rowToSearchResult(row) {
     chunkId: row.chunk_id,
     page: row.page_number,
     heading: row.heading,
+    isToc: Boolean(row.is_toc),
     chunkText: row.text
   };
+}
+
+function normalizeQueries(args) {
+  const values = [];
+  if (Array.isArray(args.queries)) {
+    values.push(...args.queries);
+  }
+  values.push(args.q, args.query);
+  return [...new Set(values.map(value => String(value ?? "").trim()).filter(Boolean))];
 }
 
 function normalizeText(value) {
@@ -82,6 +106,10 @@ function normalizeText(value) {
 function queryTokens(value) {
   const normalized = normalizeText(value);
   return normalized.split(/\s+/).filter(Boolean);
+}
+
+function uniqueTokens(tokens) {
+  return [...new Set(tokens.filter(token => token.length > 0))];
 }
 
 function escapeLike(value) {

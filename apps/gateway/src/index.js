@@ -45,7 +45,16 @@ const TOOLS = [
       properties: {
         q: { type: "string" },
         query: { type: "string" },
+        queries: {
+          type: "array",
+          items: { type: "string" }
+        },
         documentId: { type: "string" },
+        includeToc: { type: "boolean" },
+        mode: {
+          type: "string",
+          enum: ["hybrid", "keyword"]
+        },
         limit: { type: "integer", minimum: 1, maximum: 20 }
       }
     }
