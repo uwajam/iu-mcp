@@ -1,5 +1,6 @@
 import { handleMcpGatewayRequest } from "../apps/gateway/src/index.js";
 import { SITE_HTML } from "../apps/gateway/src/site.js";
+import { handlePdfApiRequest } from "../services/pdf/src/index.js";
 import { handleSyllabusApiRequest } from "../services/syllabus/src/index.js";
 import { emptyResponse, htmlResponse, jsonResponse, notFoundResponse, textResponse } from "../packages/shared/src/http.js";
 
@@ -48,6 +49,10 @@ export default {
 
       if (url.pathname.startsWith("/api/syllabus/")) {
         return handleSyllabusApiRequest(request, env);
+      }
+
+      if (url.pathname.startsWith("/api/pdf/")) {
+        return handlePdfApiRequest(request, env);
       }
 
       if (url.pathname === "/health" && request.method === "GET") {

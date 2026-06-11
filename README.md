@@ -4,7 +4,7 @@
 
 表示名は「茨城大学学務情報MCP」です。リポジトリ名・Worker名・MCP登録名は `iu-mcp` に寄せています。
 
-現在はシラバス検索・詳細取得に対応しています。今後、履修案内PDF、学務文書PDF、図書館キャッシュAPIを追加する予定です。
+現在はシラバス検索・詳細取得と、公開PDFの全文検索に対応しています。今後、対象PDFの拡充と図書館キャッシュAPIを追加する予定です。
 
 公開Workerは大学サイトへリアルタイム検索を行いません。シラバス検索はD1に投入済みの静的データだけを読みます。
 
@@ -26,7 +26,7 @@ services/syllabus
   シラバス検索・詳細取得API。D1 schemaに沿って検索する。
 
 services/pdf
-  将来のPDF API用の境界。現時点では未実装。
+  履修案内PDF・学務文書PDFの検索API。現在は全文検索の最小実装。
 
 services/library
   将来の図書館API用の境界。現時点では未実装。
@@ -38,7 +38,7 @@ jobs/syllabus-crawler
   大学サイトからシラバスをページ単位で収集し、SQLite/D1 seedを生成する。
 
 jobs/pdf-importer
-  将来のPDF取得・テキスト抽出・インデックス作成用の境界。現時点では未実装。
+  PDF取得・テキスト抽出・チャンク化・インデックス作成。
 
 migrations
   D1 schema。
@@ -63,7 +63,7 @@ src/worker.js
   - `/api/syllabus/search`、`/api/syllabus/courses/:id`、`/api/syllabus/health` を提供します。
 - MCP tools
   - `apps/gateway/src/index.js`
-  - `syllabus.search_courses` / `syllabus.get_course` を公開し、tool呼び出し時にsyllabus APIをfetchします。
+  - `syllabus.search_courses` / `syllabus.get_course` / `pdf.search_documents` を公開し、tool呼び出し時に各service APIをfetchします。
 
 ## Setup
 
@@ -138,6 +138,25 @@ python jobs/syllabus-crawler/export-d1-seed.py --db work/ibaraki_syllabus.sqlite
 
 公開Workerはクロールを行わず、D1だけを読みます。
 
+## Import PDF Data
+
+最初のPDF検索対象として、工学部の履修要項PDFを取り込めます。
+
+```sh
+python jobs/pdf-importer/import-pdf.py --db work/iu_mcp.sqlite
+python jobs/pdf-importer/export-d1-seed.py --db work/iu_mcp.sqlite --chunk-size 500
+npx wrangler d1 execute ibaraki_syllabus --remote --file work/pdf_d1_seed/0001.sql
+```
+
+既定の取り込み対象:
+
+```text
+title: 茨城大学工学部 履修要項 令和8年度入学者用（2026）
+source_url: https://www.eng.ibaraki.ac.jp/common/education/class/2026-course-registration02.pdf
+```
+
+PDF全体をLLMへ渡さず、job側でページ単位のテキスト抽出、チャンク化、SQLite/D1投入用seed生成を行います。
+
 ## HTTP API
 
 ```text
@@ -145,6 +164,9 @@ GET  /api/syllabus/health
 GET  /api/syllabus/search?academicYear=2026&query=入門&limit=20
 POST /api/syllabus/search
 GET  /api/syllabus/courses/:id
+GET  /api/pdf/health
+GET  /api/pdf/search?q=卒業要件&limit=10
+POST /api/pdf/search
 POST /mcp
 ```
 
@@ -164,6 +186,7 @@ POST /mcp
 
 - `syllabus.search_courses`
 - `syllabus.get_course`
+- `pdf.search_documents`
 
 MCP GatewayはD1を直接参照しません。tool呼び出しは内部HTTP APIへ変換されます。
 

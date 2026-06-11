@@ -36,6 +36,19 @@ const TOOLS = [
       },
       required: ["courseId"]
     }
+  },
+  {
+    name: "pdf.search_documents",
+    description: "Search indexed public Ibaraki University academic PDF document chunks.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        q: { type: "string" },
+        query: { type: "string" },
+        documentId: { type: "string" },
+        limit: { type: "integer", minimum: 1, maximum: 20 }
+      }
+    }
   }
 ];
 
@@ -119,6 +132,13 @@ async function callTool(name, args, request, env) {
     return callSyllabusApi(request, env, `/api/syllabus/courses/${encodeURIComponent(courseId)}`);
   }
 
+  if (name === "pdf.search_documents") {
+    return callPdfApi(request, env, "/api/pdf/search", {
+      method: "POST",
+      body: JSON.stringify(args)
+    });
+  }
+
   return { __rpcError: true, message: `Unknown tool: ${name}` };
 }
 
@@ -138,6 +158,24 @@ async function callSyllabusApi(request, env, path, init = {}) {
 
   const result = await response.json();
   return response.ok ? result : { error: result.error ?? "syllabus api error", status: response.status };
+}
+
+async function callPdfApi(request, env, path, init = {}) {
+  const url = new URL(env.PDF_API_BASE_URL || request.url);
+  url.pathname = path;
+  url.search = "";
+
+  const response = await fetch(url.toString(), {
+    method: init.method ?? "GET",
+    headers: {
+      "content-type": "application/json",
+      ...(init.headers ?? {})
+    },
+    body: init.body
+  });
+
+  const result = await response.json();
+  return response.ok ? result : { error: result.error ?? "pdf api error", status: response.status };
 }
 
 function acceptedResponse() {
