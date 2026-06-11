@@ -56,6 +56,7 @@ def main():
     parser.add_argument("--chunk-dir", default="")
     parser.add_argument("--chunk-size", type=int, default=0)
     parser.add_argument("--mode", choices=["replace", "upsert"], default="replace")
+    parser.add_argument("--transaction", action="store_true")
     args = parser.parse_args()
 
     with sqlite3.connect(args.db) as conn:
@@ -64,9 +65,9 @@ def main():
 
     if args.chunk_size > 0:
         chunk_dir = Path(args.chunk_dir) if args.chunk_dir else DEFAULT_CHUNK_DIR
-        result = write_chunks(statements, chunk_dir, args.chunk_size)
+        result = write_chunks(statements, chunk_dir, args.chunk_size, args.transaction)
     else:
-        result = write_single(statements, Path(args.out))
+        result = write_single(statements, Path(args.out), args.transaction)
 
     print(json.dumps({"ok": True, **result}, ensure_ascii=False, indent=2))
 
@@ -85,39 +86,43 @@ def build_statements(conn, mode):
         yield insert_sql("pdf_chunks", CHUNK_COLUMNS, row)
 
 
-def write_single(statements, out_path):
+def write_single(statements, out_path, use_transaction):
     out_path.parent.mkdir(parents=True, exist_ok=True)
     count = 0
     with out_path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write("BEGIN TRANSACTION;\n")
+        if use_transaction:
+            f.write("BEGIN TRANSACTION;\n")
         for statement in statements:
             f.write(statement)
             count += 1
-        f.write("COMMIT;\n")
+        if use_transaction:
+            f.write("COMMIT;\n")
     return {"out": str(out_path), "statements": count}
 
 
-def write_chunks(statements, chunk_dir, chunk_size):
+def write_chunks(statements, chunk_dir, chunk_size, use_transaction):
     chunk_dir.mkdir(parents=True, exist_ok=True)
     files = []
     current = []
     for statement in statements:
         current.append(statement)
         if len(current) >= chunk_size:
-            files.append(write_chunk(chunk_dir, len(files) + 1, current))
+            files.append(write_chunk(chunk_dir, len(files) + 1, current, use_transaction))
             current = []
     if current:
-        files.append(write_chunk(chunk_dir, len(files) + 1, current))
+        files.append(write_chunk(chunk_dir, len(files) + 1, current, use_transaction))
     return {"chunkDir": str(chunk_dir), "files": files}
 
 
-def write_chunk(chunk_dir, index, statements):
+def write_chunk(chunk_dir, index, statements, use_transaction):
     path = chunk_dir / f"{index:04d}.sql"
     with path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write("BEGIN TRANSACTION;\n")
+        if use_transaction:
+            f.write("BEGIN TRANSACTION;\n")
         for statement in statements:
             f.write(statement)
-        f.write("COMMIT;\n")
+        if use_transaction:
+            f.write("COMMIT;\n")
     return str(path)
 
 

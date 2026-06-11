@@ -1,4 +1,6 @@
 import { emptyResponse, jsonResponse, rpcError, rpcResult } from "../../../packages/shared/src/http.js";
+import { handlePdfApiRequest } from "../../../services/pdf/src/index.js";
+import { handleSyllabusApiRequest } from "../../../services/syllabus/src/index.js";
 
 const SERVER_INFO = {
   name: "iu-mcp-gateway",
@@ -50,6 +52,7 @@ const TOOLS = [
           items: { type: "string" }
         },
         documentId: { type: "string" },
+        academicYear: { type: "integer" },
         includeToc: { type: "boolean" },
         mode: {
           type: "string",
@@ -152,6 +155,10 @@ async function callTool(name, args, request, env) {
 }
 
 async function callSyllabusApi(request, env, path, init = {}) {
+  if (!env.SYLLABUS_API_BASE_URL) {
+    return callInternalApi(request, env, path, init, handleSyllabusApiRequest);
+  }
+
   const url = new URL(env.SYLLABUS_API_BASE_URL || request.url);
   url.pathname = path;
   url.search = "";
@@ -170,6 +177,10 @@ async function callSyllabusApi(request, env, path, init = {}) {
 }
 
 async function callPdfApi(request, env, path, init = {}) {
+  if (!env.PDF_API_BASE_URL) {
+    return callInternalApi(request, env, path, init, handlePdfApiRequest);
+  }
+
   const url = new URL(env.PDF_API_BASE_URL || request.url);
   url.pathname = path;
   url.search = "";
@@ -185,6 +196,24 @@ async function callPdfApi(request, env, path, init = {}) {
 
   const result = await response.json();
   return response.ok ? result : { error: result.error ?? "pdf api error", status: response.status };
+}
+
+async function callInternalApi(request, env, path, init, handler) {
+  const url = new URL(request.url);
+  url.pathname = path;
+  url.search = "";
+
+  const apiRequest = new Request(url.toString(), {
+    method: init.method ?? "GET",
+    headers: {
+      "content-type": "application/json",
+      ...(init.headers ?? {})
+    },
+    body: init.body
+  });
+  const response = await handler(apiRequest, env);
+  const result = await response.json();
+  return response.ok ? result : { error: result.error ?? "internal api error", status: response.status };
 }
 
 function acceptedResponse() {

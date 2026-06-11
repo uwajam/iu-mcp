@@ -34,6 +34,13 @@ export async function searchDocuments(db, args) {
     values.push(String(args.documentId));
   }
 
+  if (args.academicYear) {
+    where.push("d.academic_year = ?");
+    values.push(Number(args.academicYear));
+  } else {
+    where.push("d.academic_year = (SELECT MAX(academic_year) FROM pdf_documents)");
+  }
+
   let sql = `
     SELECT
       d.document_id,
@@ -56,7 +63,7 @@ export async function searchDocuments(db, args) {
   if (!includeToc) {
     sql += where.length ? ` AND NOT (${TOC_SQL})` : ` WHERE NOT (${TOC_SQL})`;
   }
-  sql += " ORDER BY match_score DESC, d.document_id ASC, c.page_number ASC, c.chunk_index ASC LIMIT ?";
+  sql += " ORDER BY match_score DESC, d.academic_year DESC, d.document_id ASC, c.page_number ASC, c.chunk_index ASC LIMIT ?";
   values.unshift(...scoreValues);
   values.push(limit);
 
